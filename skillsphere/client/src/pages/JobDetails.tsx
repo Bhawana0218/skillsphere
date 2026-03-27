@@ -60,19 +60,20 @@ function JobDetails() {
   };
 
   //  Submit Proposal
-const handleApply = async () => {
+const handleApply = async (e: React.FormEvent) => {
+  e.preventDefault(); 
   try {
     await API.post("/proposals", {
       jobId: job?._id,
       ...proposal,
     });
 
+    setApplied(true); 
     alert("Proposal Submitted!");
   } catch (error) {
     console.error(error);
   }
 };
-
   // Invalid ID
   if (!id) {
     return (
