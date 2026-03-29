@@ -17,8 +17,11 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "google-auth-library": "^10.6.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.3",
+    "nodemailer": "^8.0.4",
+    "otplib": "^13.4.0",
     "razorpay": "^2.9.6",
     "socket.io": "^4.8.3"
   },
