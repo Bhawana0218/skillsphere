@@ -29,7 +29,39 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+const parseOrigins = (value) => {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+};
+
+const allowedOrigins = [
+  ...parseOrigins(process.env.CORS_ORIGINS),
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow non-browser clients (curl/postman) with no origin
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.length === 0) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(
+  cors({
+    ...corsOptions,
+  })
+);
+
+app.options("*", cors(corsOptions));
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -61,7 +93,7 @@ const serverInstance = app.listen(PORT, () => {
 //  SOCKET.IO SETUP 
 const io = new Server(serverInstance, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins.length ? allowedOrigins : true,
     methods: ["GET", "POST"],
   },
 });
