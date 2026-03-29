@@ -21,7 +21,8 @@ import availabilityRoutes from "./routes/availabilityRoutes.js";
 import disputeRoutes from "./routes/disputeRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
-
+import clientProjects from './routes/clientProjects.js';
+import freelancerRoutes from './routes/freelancerRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -47,6 +48,8 @@ app.use("/api/availability", availabilityRoutes);
 app.use("/api/disputes", disputeRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use('/api/client/projects', clientProjects);
+app.use('/api/freelancer', freelancerRoutes);
 
 
 // Start server

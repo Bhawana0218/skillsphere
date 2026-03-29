@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import { useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route  } from "react-router-dom";
+
+import MainLayout from "./layouts/MainLayout";
 
 // Pages
-import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -14,45 +14,118 @@ import Freelancers from "./pages/Freelancers";
 import Profile from "./pages/Profile";
 import Proposals from "./pages/Proposals";
 import BookSlot from "./pages/BookSlot";
-import FreelancerDashboard from "./pages/FreelancerDashboard";
+import FreelancerDashboardPage from "./pages/freelancer/Dashboard";
+import FreelancerProfilePage from "./pages/freelancer/Profile";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
+import ClientDashboard from "./pages/client/ClientDashboard";
 
-// if (!user) {
-//   return <Navigate to="/login" />;
-// }
-
-// const navigate = useNavigate();
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
       <Routes>
 
-        {/* 🌐 PUBLIC ROUTES */}
+        {/* PUBLIC ROUTES */}
        
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/home" element={<Home />} />
 
-        {/* 🔒 PROTECTED ROUTES */}
-        <Route
-          path="/dashboard"
+        {/*  PROTECTED ROUTES */}
+
+
+         <Route
+          path="/home"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <MainLayout>
+                <Home />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/freelancer-dashboard"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <FreelancerDashboard />
+               <MainLayout>
+                <Dashboard />
+              </MainLayout>
             </ProtectedRoute>
+          }
+        />
+
+        {/* Freelancer route set (connected pages + props path state) */}
+        <Route
+          path="/freelancer/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <FreelancerDashboardPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/freelancer/profile"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <FreelancerProfilePage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/client/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+               <ClientDashboard onBack={()=> null}/>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/jobs"
+          element={
+            // <MainLayout>
+              <Jobs />
+            // </MainLayout>
+          }
+        />
+
+          <Route
+          path="/jobs/:id"
+          element={
+            // <MainLayout>
+              <JobDetails />
+            // </MainLayout>
+          }
+        />
+
+        <Route
+          path="/create-job"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <CreateJob />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/freelancers"
+          element={
+            <MainLayout>
+              <Freelancers />
+           </MainLayout>
           }
         />
 
@@ -60,25 +133,25 @@ function App() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <Profile />
+              <MainLayout>
+                <Profile />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
-
-        {/* 💼 JOB ROUTES */}
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/:id" element={<JobDetails />} />
 
         <Route
           path="/create-job"
           element={
             <ProtectedRoute>
-              <CreateJob />
+              <MainLayout>
+               <CreateJob />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* 📄 PROPOSALS */}
+        {/* PROPOSALS */}
         <Route
           path="/proposals/:jobId"
           element={
@@ -88,20 +161,20 @@ function App() {
           }
         />
 
-        {/* 👨‍💻 FREELANCERS */}
-        <Route path="/freelancers" element={<Freelancers />} />
 
-        {/* 📅 BOOK SLOT */}
+        {/* BOOK SLOT */}
         <Route
           path="/book-slot/:freelancerId/:jobId"
           element={
             <ProtectedRoute>
-              <BookSlot />
+              <MainLayout>
+               <BookSlot />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* ❌ FALLBACK */}
+        {/*  FALLBACK */}
         <Route path="*" element={<h1 className="text-white text-center mt-10">404 - Page Not Found</h1>} />
 
       </Routes>

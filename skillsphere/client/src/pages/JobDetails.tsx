@@ -61,17 +61,22 @@ function JobDetails() {
 
   //  Submit Proposal
 const handleApply = async (e: React.FormEvent) => {
-  e.preventDefault(); 
+  e.preventDefault();
+
   try {
+    console.log("Submitting proposal:", proposal);
+
     await API.post("/proposals", {
       jobId: job?._id,
       ...proposal,
     });
 
-    setApplied(true); 
+    setApplied(true);
     alert("Proposal Submitted!");
-  } catch (error) {
-    console.error(error);
+
+  } catch (error: any) {
+    console.error("ERROR:", error.response?.data || error.message);
+    alert(error.response?.data?.message || "Failed to apply");
   }
 };
   // Invalid ID

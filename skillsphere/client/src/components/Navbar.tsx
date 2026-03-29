@@ -1,4 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
+const user = JSON.parse(localStorage.getItem("user") || "{}");
+const role = user?.role;
+
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -32,11 +35,32 @@ const Navbar = () => {
 )}
 
       {/* Links */}
-      <div className="flex gap-6 items-center">
+      <div className="flex gap-6 items-center flex-wrap">
 
-        <Link to="/dashboard" className="hover:text-blue-400">
-          Dashboard
+        <Link to="/home" className="hover:text-blue-400">
+          Home
         </Link>
+
+        {/* <Link to="freelancer/dashboard" className="hover:text-blue-400">
+          Client Dashboard
+        </Link> */}
+
+        {role === "freelancer" && (
+          <>
+            <Link to="/freelancer/dashboard" className="hover:text-blue-400">
+              Freelancer Dashboard
+            </Link>
+            <Link to="/freelancer/profile" className="hover:text-blue-400">
+              Freelancer Profile
+            </Link>
+          </>
+        )}
+
+        {role === "client" && (
+          <Link to="/client/dashboard" className="hover:text-blue-400">
+            Client Dashboard
+          </Link>
+        )}
 
         <Link to="/jobs" className="hover:text-blue-400">
           Jobs
@@ -44,6 +68,18 @@ const Navbar = () => {
 
         <Link to="/freelancers" className="hover:text-blue-400">
           Freelancers
+        </Link>
+
+        <Link to="/create-job" className="hover:text-blue-400">
+          Create Job
+        </Link>
+
+        <Link to="/proposals/1" className="hover:text-blue-400">
+          Proposal (sample)
+        </Link>
+
+        <Link to="/book-slot/1/1" className="hover:text-blue-400">
+          Book Slot (sample)
         </Link>
 
         <Link to="/profile" className="hover:text-blue-400">
@@ -71,8 +107,11 @@ const Navbar = () => {
             </Link>
           </>
         )}
+
+      
       </div>
     </nav>
+     
   );
 };
 
