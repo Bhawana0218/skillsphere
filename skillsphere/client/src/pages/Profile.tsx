@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import API from "../services/api";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 // Skill Type
 interface Skill {
@@ -47,9 +49,10 @@ function Profile() {
     e.preventDefault();
     try {
       await API.post("/profile", profile);
-      alert("Profile saved!");
+      toast.success("Profile saved!");
     } catch (error) {
       console.error(error);
+      toast.error("Failed to save profile.");
     }
   };
 
@@ -87,7 +90,61 @@ function Profile() {
 
   return (
     <div className="p-10 bg-gray-900 min-h-screen text-white">
-      <h1 className="text-3xl mb-6">Your Profile</h1>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl">Your Profile</h1>
+          <p className="mt-1 text-sm text-white/70">
+            Manage your public profile and account security.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to="/settings/security"
+            className="rounded-xl bg-cyan-500/20 px-4 py-2 text-sm font-semibold text-cyan-200 ring-1 ring-cyan-400/20 hover:bg-cyan-500/25"
+          >
+            Security (2FA)
+          </Link>
+          <Link
+            to="/resend-verification"
+            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15"
+          >
+            Resend verification
+          </Link>
+        </div>
+      </div>
+
+      <div className="mb-8 grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10">
+          <div className="text-sm font-semibold">Account status</div>
+          <div className="mt-2 text-sm text-white/70">
+            Email verification and security settings help protect your payments and reputation.
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              to="/verify-email"
+              className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15"
+            >
+              Verify email
+            </Link>
+            <Link
+              to="/forgot-password"
+              className="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 hover:bg-white/15"
+            >
+              Reset password
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white/5 p-5 ring-1 ring-white/10">
+          <div className="text-sm font-semibold">Security recommendations</div>
+          <ul className="mt-2 list-inside list-disc text-sm text-white/70">
+            <li>Enable 2FA for login protection</li>
+            <li>Verify email for trusted collaboration</li>
+            <li>Use a strong password and rotate periodically</li>
+          </ul>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* BIO */}

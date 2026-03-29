@@ -302,7 +302,7 @@ const SkillSphereHome: React.FC = () => {
   const [isPostProjectModalOpen, setIsPostProjectModalOpen] = useState(false);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [isPlayingTestimonial, setIsPlayingTestimonial] = useState(true);
+  const [isPlayingTestimonial] = useState(true);
   // const [isMuted, setIsMuted] = useState(true);
 
   // Notification system

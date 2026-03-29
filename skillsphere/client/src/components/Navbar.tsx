@@ -1,11 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
-const user = JSON.parse(localStorage.getItem("user") || "{}");
-const role = user?.role;
-
 
 const Navbar = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const user = (() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "null") as { role?: string } | null;
+    } catch {
+      return null;
+    }
+  })();
+  const role = user?.role;
 
   const handleLogout = () => {
   localStorage.clear();
@@ -85,6 +90,12 @@ const Navbar = () => {
         <Link to="/profile" className="hover:text-blue-400">
           Profile
         </Link>
+
+        {token ? (
+          <Link to="/settings/security" className="hover:text-blue-400">
+            Security
+          </Link>
+        ) : null}
 
         {/* Auth Buttons */}
         {token ? (

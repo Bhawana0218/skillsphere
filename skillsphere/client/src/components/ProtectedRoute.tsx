@@ -8,6 +8,7 @@ interface User {
   email: string;
   role: string;
   token: string;
+  isVerified?: boolean;
 }
 
 //  Props Type
@@ -26,6 +27,12 @@ function ProtectedRoute({ children }: ProtectedRouteProps) {
   //  MAIN AUTH CHECK
   if (!token || !user) {
     return <Navigate to="/" replace />; // or "/login"
+  }
+
+  // Email verification gate (product UX).
+  // Backend can additionally enforce with REQUIRE_EMAIL_VERIFIED=true.
+  if (user.isVerified === false) {
+    return <Navigate to="/verify-required" replace />;
   }
 
   // if (role && user.role !== role) {
