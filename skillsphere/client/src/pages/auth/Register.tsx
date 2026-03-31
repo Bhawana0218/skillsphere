@@ -150,7 +150,7 @@ function Register() {
           <select
             name="role"
             value={form.role}
-            className="h-11 w-full rounded-xl bg-white/5 px-4 text-sm text-white ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/70"
+            className="h-11 w-full rounded-xl bg-white/5 px-4 text-sm text-black ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/70"
             onChange={handleChange}
           >
             <option value="client">Client</option>

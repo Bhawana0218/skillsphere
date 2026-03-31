@@ -25,6 +25,8 @@ import BookSlot from "./pages/BookSlot";
 import FreelancerDashboardPage from "./pages/freelancer/Dashboard";
 import FreelancerProfilePage from "./pages/freelancer/Profile";
 
+import FreelancerDashboard from "./pages/FreelancerDashboard";
+
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -76,6 +78,17 @@ function App() {
             <ProtectedRoute>
                <MainLayout>
                 <Dashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+         <Route
+          path="/freelancer-dashboard"
+          element={
+            <ProtectedRoute>
+               <MainLayout>
+                <FreelancerDashboard />
               </MainLayout>
             </ProtectedRoute>
           }

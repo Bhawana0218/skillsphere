@@ -117,12 +117,6 @@ function Login() {
     });
   };
 
-//   const location = useLocation();
-
-//   if (location.pathname === "/home" || location.pathname === "/register") {
-//   return null;
-// }
-
   return (
     <AuthShell
       title={step === "login" ? "Welcome back" : "Two-factor verification"}
