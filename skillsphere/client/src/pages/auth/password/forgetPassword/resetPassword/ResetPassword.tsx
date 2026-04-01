@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import API from "../../services/api";
-import AuthShell from "../../components/auth/AuthShell";
-import { Button, Input, Label } from "../../components/auth/Ui";
+import API from "../../../../../services/api";
+import AuthShell from "../../../../../components/auth/AuthShell";
+import { Button, Input, Label } from "../../../../../components/auth/Ui";
 
 function useQuery() {
   const { search } = useLocation();

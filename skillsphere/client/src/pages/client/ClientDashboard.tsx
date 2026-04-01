@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import { 
   CheckCircle,
   Clock,
@@ -48,12 +49,23 @@ interface ProjectFormData {
   category?: string;
 }
 
+// Define User Type
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  token: string;
+}
+
 const ClientDashboard: React.FC<ClientDashboardProps> = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+
+  const navigate = useNavigate();
 
   // Fetch Projects
   const fetchProjects = async () => {
@@ -91,6 +103,15 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
       toast.error(error.response?.data?.message || 'Failed to create project');
     }
   };
+
+  const storedUser = localStorage.getItem("user");
+    const user: User | null = storedUser ? JSON.parse(storedUser) : null;
+  
+     useEffect(() => {
+      if (!user) {
+        navigate("/");
+      }
+    }, [user, navigate]);
 
   // Delete Project
   const handleDeleteProject = async (id?: string) => {
@@ -138,7 +159,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
             </div>
             <div className="hidden md:block">
               <h1 className="text-xl font-bold bg-linear-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Welcome, {localStorage.getItem("username") || "Client"}
+                Welcome, {user?.name}!
               </h1>
               <p className="text-sm text-slate-500 font-medium">Manage your projects & gigs</p>
             </div>

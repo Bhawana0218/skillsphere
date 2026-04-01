@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import AuthShell from "../../components/auth/AuthShell";
-import { Button } from "../../components/auth/Ui";
+import AuthShell from "../../../components/auth/AuthShell";
+import { Button } from "../../../components/auth/Ui";
 
 export default function VerifyRequired() {
   const navigate = useNavigate();

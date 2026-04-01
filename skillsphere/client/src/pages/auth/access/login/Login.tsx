@@ -1,12 +1,11 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent} from 'react';
-// import { useLocation } from "react-router-dom";
 
-import API from "../../services/api";
+import API from "../../../../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import AuthShell from "../../components/auth/AuthShell";
-import { Button, Input, Label } from "../../components/auth/Ui";
+import AuthShell from "../../../../components/auth/AuthShell";
+import { Button, Input, Label } from "../../../../components/auth/Ui";
 import { GoogleLogin } from "@react-oauth/google";
 
 // Type for Form

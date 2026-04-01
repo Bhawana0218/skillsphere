@@ -38,7 +38,7 @@ export default function AccountStatusBanner() {
   };
 
   return (
-    <div className="mx-auto mb-4 max-w-6xl rounded-2xl bg-gradient-to-r from-cyan-500/10 via-white/5 to-indigo-500/10 p-4 ring-1 ring-white/10">
+    <div className="mx-auto mb-4 max-w-6xl rounded-2xl bg-linear-to-r from-cyan-500/10 via-white/5 to-indigo-500/10 p-4 ring-1 ring-white/10">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="text-sm text-white/80">
           <span className="font-semibold text-white">Account status:</span>{" "}

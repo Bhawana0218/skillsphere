@@ -1,59 +1,3 @@
-// import { useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-
-// import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
-
-// const chartData = [
-//   { month: "Jan", earnings: 2000 },
-//   { month: "Feb", earnings: 5000 },
-//   { month: "Mar", earnings: 8000 },
-// ];
-
-// // Define User Type
-// interface User {
-//   _id: string;
-//   name: string;
-//   email: string;
-//   role: string;
-//   token: string;
-// }
-
-// function Dashboard() {
-//   const navigate = useNavigate();
-
-//   // Safely parse localStorage
-//   const storedUser = localStorage.getItem("user");
-//   const user: User | null = storedUser ? JSON.parse(storedUser) : null;
-
-//   useEffect(() => {
-//     if (!user) {
-//       navigate("/");
-//     }
-//   }, [user, navigate]);
-
-//   return (
-//     <div className="p-10 text-white bg-gray-900 h-screen">
-//       <h1 className="text-3xl">
-//         Welcome {user?.name} ({user?.role})
-//       </h1>
-//       <LineChart width={400} height={200} data={chartData}>
-//   <XAxis dataKey="month" />
-//   <YAxis />
-//   <Tooltip />
-//   <Line type="monotone" dataKey="earnings" />
-// </LineChart>
-//     </div>
-//   );
-// }
-
-// export default Dashboard;
-
-
-
-
-
-
-
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -62,7 +6,7 @@ import {
 } from "recharts";
 import { 
   LayoutDashboard, Briefcase, DollarSign, Users, MessageSquare, 
-  Search, Bell, Settings, Plus, MapPin, TrendingUp, Clock, Award
+  Search, Settings, Plus, MapPin, TrendingUp, Clock, Award
 } from "lucide-react";
 
 // --- MOCK DATA ---
@@ -90,6 +34,16 @@ interface StatCardProps {
   colorClass?: string;
 }
 
+
+// Define User Type
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  token: string;
+}
+
 const recentActivity = [
   { id: 1, title: "Logo Design Project", status: "In Progress", date: "2 hours ago", type: "project" },
   { id: 2, title: "Payment Received", status: "$500 Milestone", date: "5 hours ago", type: "money" },
@@ -107,7 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     { icon: Briefcase, label: "Projects", path: "/projects" },
     { icon: DollarSign, label: "Payments", path: "/payments" },
     { icon: Users, label: "Team & Hiring", path: "/team" },
+
   ];
+
+  const storedUser = localStorage.getItem("user");
+  const user: User | null = storedUser ? JSON.parse(storedUser) : null;
 
   return (
     <div className="w-64 bg-slate-900 h-screen fixed left-0 top-0 border-r border-slate-800 flex flex-col justify-between">
@@ -132,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
           
           {/* Hyperlocal Feature Badge */}
           <div className="mt-8 px-4">
-             <div className="bg-gradient-to-r from-cyan-900 to-blue-900 p-4 rounded-xl border border-cyan-500/30">
+             <div className="bg-linear-to-r from-cyan-900 to-blue-900 p-4 rounded-xl border border-cyan-500/30">
                 <div className="flex items-center gap-2 mb-2">
                   <MapPin className="text-cyan-400 w-4 h-4" />
                   <span className="text-xs font-bold text-cyan-100 uppercase tracking-wider">Hyperlocal</span>
@@ -158,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
              {role ? role.charAt(0).toUpperCase() : 'U'}
            </div>
            <div className="flex-1 overflow-hidden">
-             <p className="text-sm font-bold text-white truncate">User Name</p>
+             <p className="text-sm font-bold text-white truncate">{user?.name}</p>
              <p className="text-xs text-slate-400 truncate">{role} Mode</p>
            </div>
         </div>
@@ -188,6 +146,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState(null);
 
+  const storedUser = localStorage.getItem("user");
+  const user: User | null = storedUser ? JSON.parse(storedUser) : null;
+
+   useEffect(() => {
+    if (!user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
+
   useEffect(() => {
     // Simulating an initial load or checking auth
     const timer = setTimeout(() => {
@@ -213,12 +181,12 @@ export default function Dashboard() {
   }
 
   // Dynamic content based on role
-  const welcomeMessage = userRole === "Client" 
-    ? "Welcome back! Here's what's happening in your projects." 
-    : "Hello Creator! Your portfolio is performing well.";
+  const welcomeMessage = userRole === "client" 
+    ? `Welcome Back ${user?.name} [${user?.role}]! Here's what's happening in your projects.` 
+    : `Hello ${user?.name} [${user?.role}]! Your portfolio is performing well.`;
 
-  const primaryActionText = userRole === "Client" ? "Post a Job" : "Find Jobs";
-  const highlightTitle = userRole === "Client" ? "Hiring Needs" : "Earnings Growth";
+  const primaryActionText = userRole === "client" ? "Post a Job" : "Find Jobs";
+  const highlightTitle = userRole === "freelancer" ? "Hiring Needs" : "Earnings Growth";
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans flex">
@@ -244,11 +212,6 @@ export default function Dashboard() {
                 className="pl-10 pr-4 py-2.5 rounded-full bg-white border-none ring-1 ring-slate-200 focus:ring-2 focus:ring-cyan-500 outline-none w-64 transition-all"
               />
             </div>
-            
-            <button className="relative p-2.5 bg-white rounded-full border border-slate-200 hover:border-cyan-500 transition-colors">
-              <Bell size={20} className="text-slate-600" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
 
             <button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-medium transition-all shadow-lg hover:shadow-cyan-500/20">
               <Plus size={18} />
@@ -260,14 +223,14 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard 
-            title={userRole === 'Client' ? "Active Projects" : "Total Earnings"} 
+            title={userRole === 'client' ? "Active Projects" : "Total Earnings"} 
             value="$12,450" 
             subtext="+18% from last month" 
             icon={DollarSign} 
             colorClass="text-emerald-600" 
           />
           <StatCard 
-            title={userRole === 'Client' ? "Proposals Sent" : "Active Gigs"} 
+            title={userRole === 'client' ? "Proposals Sent" : "Active Gigs"} 
             value="14" 
             subtext="Pending client response" 
             icon={Briefcase} 
@@ -308,7 +271,7 @@ export default function Dashboard() {
               </select>
             </div>
             
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
@@ -337,7 +300,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity Feed */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[366px]">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-91.5">
             <h3 className="text-lg font-bold text-slate-800 mb-4">Real-time Updates</h3>
             <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
               {recentActivity.map((item) => (
@@ -374,7 +337,7 @@ export default function Dashboard() {
 
         {/* AI Recommendation Bar */}
         <div className="mt-8">
-          <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-6 text-white relative overflow-hidden">
+          <div className="bg-linear-to-r from-indigo-600 to-blue-600 rounded-2xl p-6 text-white relative overflow-hidden">
              {/* Decorative circles */}
              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
              
@@ -385,7 +348,7 @@ export default function Dashboard() {
                    SkillSphere Smart Suggestions
                  </h3>
                  <p className="text-blue-100 text-sm opacity-90">
-                   Based on your recent project history, we found <strong>3 High-value Freelancers</strong> in your city specializing in {userRole === 'Client' ? 'Full Stack Dev' : 'React.js Development'}.
+                   Based on your recent project history, we found <strong>3 High-value Freelancers</strong> in your city specializing in {userRole === 'client' ? 'Full Stack Dev' : 'React.js Development'}.
                  </p>
                </div>
                <button className="bg-white text-indigo-600 px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors shadow-lg">

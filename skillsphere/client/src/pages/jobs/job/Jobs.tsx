@@ -1,6 +1,6 @@
 
 import { useEffect, useState} from "react";
-import API from "../services/api";
+import API from "../../../services/api";
 import { Link } from "react-router-dom";
 import { 
   PlusIcon,
@@ -25,7 +25,7 @@ interface Job {
   _id: string;
   title: string;
   description: string;
-  budget: string;
+  budget: number;
   skillsRequired: string[];
   company: string;
   location: string;
@@ -54,13 +54,13 @@ interface Filters {
   sortBy: "newest" | "oldest" | "budget-asc" | "budget-desc";
 }
 
- const formatCurrency = (value: string) => {
-    const num = parseFloat(value);
+ const formatCurrency = (value: number) => {
+    // const num = parseFloat();
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(num);
+    }).format(value);
   };
 
   // Format date
@@ -110,7 +110,7 @@ export default function JobsDashboard() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    budget: "",
+    budget: 0,
     skillsRequired: "" as string | string[],
     company: "",
     location: "",
@@ -182,7 +182,7 @@ export default function JobsDashboard() {
       setFormData({
         title: "",
         description: "",
-        budget: "",
+        budget: Number(0),
         skillsRequired: "",
         company: "",
         location: "",
@@ -199,7 +199,7 @@ export default function JobsDashboard() {
     setFormData({
       title: "",
       description: "",
-      budget: "",
+      budget: Number(0),
       skillsRequired: "",
       company: "",
       location: "",
@@ -277,11 +277,19 @@ export default function JobsDashboard() {
   const searchJobs = async () => {
     setLoading(true);
     try {
-      const query = new URLSearchParams(filters as any).toString();
-      const { data } = await API.get(`/jobs/search?${query}`);
-      setJobs(data || []);
-      calculateStats(data || []);
-      showNotification("info", "Search results updated");
+      const params = new URLSearchParams();
+
+    if (filters.keyword) params.append("keyword", filters.keyword);
+    if (filters.minBudget) params.append("minBudget", filters.minBudget);
+    if (filters.maxBudget) params.append("maxBudget", filters.maxBudget);
+    if (filters.skills) params.append("skills", filters.skills);
+    if (filters.status) params.append("status", filters.status);
+    if (filters.sortBy) params.append("sortBy", filters.sortBy);
+
+    const { data } = await API.get(`/jobs/search?${params.toString()}`);
+
+    setJobs(data || []);
+    calculateStats(data || []);
     } catch (error) {
       console.error("Search error:", error);
       showNotification("error", "Search failed");
@@ -338,13 +346,13 @@ export default function JobsDashboard() {
       </AnimatePresence>
 
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+      <nav className="bg-white mt-10 shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-3">
               <BriefcaseIcon className="w-8 h-8 text-cyan-600" />
               <span className="text-xl font-bold text-gray-900">
-                JobPortal<span className="text-cyan-600">Pro</span>
+                Jobs
               </span>
             </div>
 
@@ -429,7 +437,7 @@ export default function JobsDashboard() {
                 placeholder="Job title..."
                 value={filters.keyword}
                 onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 placeholder:text-gray-500 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               />
             </div>
 
@@ -443,7 +451,7 @@ export default function JobsDashboard() {
                 placeholder="Min"
                 value={filters.minBudget}
                 onChange={(e) => setFilters({ ...filters, minBudget: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-black focus:ring-2 placeholder:text-gray-500 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               />
             </div>
 
@@ -457,7 +465,7 @@ export default function JobsDashboard() {
                 placeholder="Max"
                 value={filters.maxBudget}
                 onChange={(e) => setFilters({ ...filters, maxBudget: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="w-full px-4 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 placeholder:text-gray-500 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               />
             </div>
 
@@ -471,7 +479,7 @@ export default function JobsDashboard() {
                 placeholder="React, Node..."
                 value={filters.skills}
                 onChange={(e) => setFilters({ ...filters, skills: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 text-blackrounded-lg focus:ring-2 text-black placeholder:text-gray-500 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               />
             </div>
 
@@ -480,7 +488,7 @@ export default function JobsDashboard() {
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as any })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-black focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -496,7 +504,7 @@ export default function JobsDashboard() {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 text-black focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
               >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
@@ -647,7 +655,7 @@ export default function JobsDashboard() {
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="Senior Frontend Developer"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-blackfocus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                   />
                 </div>
 
@@ -663,7 +671,7 @@ export default function JobsDashboard() {
                     value={formData.company}
                     onChange={handleInputChange}
                     placeholder="Acme Technologies"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 text-black focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                   />
                 </div>
 
@@ -680,7 +688,7 @@ export default function JobsDashboard() {
                       value={formData.location}
                       onChange={handleInputChange}
                       placeholder="Remote / Bangalore / Mumbai"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                     />
                   </div>
 
@@ -692,7 +700,7 @@ export default function JobsDashboard() {
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 text-blackrounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                     >
                       <option value="active">Active</option>
                       <option value="pending">Pending Review</option>
@@ -713,7 +721,7 @@ export default function JobsDashboard() {
                     value={formData.budget}
                     onChange={handleInputChange}
                     placeholder="1000000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-blackfocus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                   />
                 </div>
 
@@ -729,7 +737,7 @@ export default function JobsDashboard() {
                     value={formData.skillsRequired}
                     onChange={handleInputChange}
                     placeholder="React, TypeScript, Node.js, MongoDB"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Separate multiple skills with commas
@@ -748,7 +756,7 @@ export default function JobsDashboard() {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Describe the job responsibilities, requirements, and benefits..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all resize-none"
                   />
                 </div>
               </form>
@@ -776,23 +784,6 @@ export default function JobsDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-12 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <BriefcaseIcon className="w-6 h-6 text-cyan-600" />
-              <span className="text-lg font-bold text-gray-900">
-                JobPortal<span className="text-cyan-600">Pro</span>
-              </span>
-            </div>
-            <p className="text-sm text-gray-500">
-              © 2026 JobPortalPro. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

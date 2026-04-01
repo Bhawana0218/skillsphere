@@ -7,7 +7,8 @@ const router = express.Router();
 
 router.post("/", protect, authorizeRoles("client"), createJob);
 router.get("/", getJobs);
-router.get("/:id", getJobById);
 router.get("/search", searchJobs);
+router.get("/:id", getJobById);
+
 
 export default router;

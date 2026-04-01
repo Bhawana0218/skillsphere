@@ -21,27 +21,42 @@ interface Proposal {
 // }
 
 function Proposals() {
-
   const { jobId } = useParams<{ jobId: string }>();
 
-useEffect(() => {
-  if (!jobId) return; 
-  fetchProposals();
-}, [jobId]);
-
-  const [proposals, setProposals] = useState<Proposal[]>([]);
+  // Debug: Log the jobId to identify invalid values
+  useEffect(() => {
+    console.log("Proposals component loaded with jobId:", jobId);
+    
+    // Validate MongoDB ObjectId format
+    if (jobId && !/^[0-9a-f]{24}$/i.test(jobId)) {
+      console.error("❌ INVALID JOB ID FORMAT:", jobId);
+      console.error("Expected MongoDB ObjectId (24 hex characters), got:", jobId);
+    }
+  }, [jobId]);
 
   useEffect(() => {
-    if (jobId) fetchProposals();
+    if (!jobId) return;
+    if (!/^[0-9a-f]{24}$/i.test(jobId)) {
+      console.error("Cannot fetch proposals with invalid jobId:", jobId);
+      return;
+    }
+    fetchProposals();
   }, [jobId]);
+
+  const [proposals, setProposals] = useState<Proposal[]>([]);
 
   // Fetch Proposals
   const fetchProposals = async () => {
     try {
+      console.log("Fetching proposals for jobId:", jobId);
       const { data } = await API.get<Proposal[]>(`/proposals/${jobId}`);
+      console.log("✅ Successfully fetched proposals:", data);
       setProposals(data);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      console.error("❌ Error fetching proposals:", error.response?.data || error.message);
+      if (error.response?.status === 400) {
+        console.error("Invalid Job ID format. Expected MongoDB ObjectId format (24 hex chars)");
+      }
     }
   };
 

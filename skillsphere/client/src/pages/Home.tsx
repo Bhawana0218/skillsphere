@@ -3,11 +3,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   Search, Code, ShieldCheck, Zap, MessageSquare, Menu, X, MapPin, Star, 
-  Clock, CheckCircle, Heart, Send, ChevronDown,
+  Clock, CheckCircle, Heart, ChevronDown,
   Bell, ArrowRight, Globe, Lock, TrendingUp,
   AlertCircle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 // --- Types ---
 interface Project {
@@ -438,7 +437,7 @@ const SkillSphereHome: React.FC = () => {
       <motion.nav 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="bg-white/90 backdrop-blur-xl fixed w-full z-50 border-b border-slate-200/50 shadow-sm"
+        className="bg-white/90 sticky backdrop-blur-xl w-full z-50 border-b border-slate-200/50 shadow-sm"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
@@ -447,16 +446,11 @@ const SkillSphereHome: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               className="flex items-center gap-3 cursor-pointer"
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-linear-to-r from-cyan-100 to-blue-100 rounded-xl blur-lg opacity-30 animate-pulse"></div>
-               
-                <img  src='./Logo.png' alt='SkillSphere Logo' className='w-40 h-36'/>
-              </div>
               
             </motion.div>
             
             {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden md:flex mx-auto items-center space-x-1">
               {["Find Work", "Find Talent", "How it Works", "Pricing"].map((item) => (
                 <motion.a
                   key={item}
@@ -468,33 +462,6 @@ const SkillSphereHome: React.FC = () => {
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-linear-to-r from-cyan-500 to-blue-500 group-hover:w-full transition-all duration-300"></span>
                 </motion.a>
               ))}
-            </div>
-
-            {/* Right Actions */}
-            <div className="hidden md:flex items-center gap-3">
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors"
-              >
-                <Bell className="w-5 h-5 text-slate-600" />
-                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-              </motion.button> 
-
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-5 py-2.5 text-slate-700 font-medium hover:bg-slate-100 rounded-xl transition-colors"
-              >
-                <Link to="/">Log In</Link>
-                {/* Log In */}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(37, 99, 235, 0.4)" }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/25"
-              >
-                <Link to="/register">Join Now</Link>
-              </motion.button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -543,7 +510,7 @@ const SkillSphereHome: React.FC = () => {
       </motion.nav> 
 
       {/* --- Hero Section --- */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <section className="relative  -mt-28   pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-200/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
           <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-200/30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
@@ -1124,7 +1091,7 @@ const SkillSphereHome: React.FC = () => {
             <img 
                   src="./Logo.png" 
                   alt="SkillSphere" 
-                  className="mx-auto block w-64 h-58 object-contain -my-12" 
+                  className="mx-auto block w-900 h-60 object-contain -my-12" 
              />
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
               Ready to Transform How You Work?
@@ -1163,108 +1130,6 @@ const SkillSphereHome: React.FC = () => {
           </motion.div>
         </div>
       </section>
-
-      {/* --- Footer --- */}
-      <footer className="bg-slate-900 text-slate-300 pt-20 pb-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                {/* <div className="bg-linear-to-r from-cyan-500 to-blue-600 p-2.5 rounded-xl"> */}
-                  {/* <Zap className="h-6 w-6 text-white" /> */}
-                  <img src='./Logo.png' alt='SkillSphere' className='w-38 h-34 -m-8'/>
-                {/* </div> */}
-                {/* <span className="text-2xl font-bold text-white">SkillSphere</span> */}
-              </div>
-              <p className="text-slate-400 mb-6 leading-relaxed max-w-md">
-                The intelligent hyperlocal freelance ecosystem connecting talent with opportunity through AI, secure technology, and human-centered design.
-              </p>
-              
-              <div className="mt-8">
-                <label className="block text-sm font-medium text-slate-300 mb-3">Stay in the loop</label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-5 py-3 bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white rounded-xl font-medium transition-all"
-                  >
-                    <Send className="w-5 h-5" />
-                  </motion.button>
-                </div>
-                <p className="text-xs text-slate-500 mt-2">We respect your privacy. Unsubscribe anytime.</p>
-              </div>
-            </div>
-            
-            {[
-              {
-                title: "Platform",
-                links: ["Browse Freelancers", "Browse Projects", "How it Works", "Pricing", "Enterprise"]
-              },
-              {
-                title: "Resources",
-                links: ["Blog", "Help Center", "Community", "Webinars", "API Docs"]
-              },
-              {
-                title: "Company",
-                links: ["About Us", "Careers", "Press", "Partners", "Contact"]
-              }
-            ].map((column) => (
-              <div key={column.title}>
-                <h4 className="text-white font-bold mb-6">{column.title}</h4>
-                <ul className="space-y-3">
-                  {column.links.map((link) => (
-                    <li key={link}>
-                      <a 
-                        href="#" 
-                        className="text-slate-400 hover:text-cyan-400 transition-colors text-sm flex items-center gap-2 group"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-cyan-400 transition-colors"></span>
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-          
-          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-sm text-slate-500">
-              © {new Date().getFullYear()} SkillSphere. All rights reserved. Crafted with ❤️ for the future of work.
-            </p>
-            <div className="flex items-center gap-6">
-              {["Terms", "Privacy", "Cookies", "Security"].map((item) => (
-                <a 
-                  key={item} 
-                  href="#" 
-                  className="text-sm text-slate-500 hover:text-cyan-400 transition-colors"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
-            <div className="flex gap-4">
-              {["twitter", "github", "linkedin", "youtube"].map((social) => (
-                <a 
-                  key={social}
-                  href="#" 
-                  className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors group"
-                  aria-label={social}
-                >
-                  <span className="text-slate-400 group-hover:text-white transition-colors capitalize text-sm font-bold">
-                    {social[0].toUpperCase()}
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
 
       {/* --- Project Detail Modal --- */}
       <AnimatePresence>
@@ -1506,22 +1371,6 @@ const SkillSphereHome: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* --- Floating Action Button --- */}
-      {/* <motion.button
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsPostProjectModalOpen(true)}
-        className="fixed bottom-6 right-6 z-40 w-16 h-16 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-full shadow-2xl shadow-blue-500/40 flex items-center justify-center group"
-        aria-label="Post a project"
-      >
-        {/* <Sparkles className="w-7 h-7 group-hover:rotate-12 transition-transform" /> */}
-        {/* <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white">
-          New
-        </span>
-      </motion.button> */}
     </div>
   );
 };

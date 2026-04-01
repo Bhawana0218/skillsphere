@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import API from "../../services/api";
-import AuthShell from "../../components/auth/AuthShell";
-import { Button, Input, Label } from "../../components/auth/Ui";
+import API from "../../../services/api";
+import AuthShell from "../../../components/auth/AuthShell";
+import { Button, Input, Label } from "../../../components/auth/Ui";
 
-export default function ForgotPassword() {
+export default function ResendVerification() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [devToken, setDevToken] = useState<string | null>(null);
@@ -18,11 +18,14 @@ export default function ForgotPassword() {
     setLoading(true);
     setDevToken(null);
     try {
-      const { data } = await API.post<{ message: string; resetToken?: string }>("/auth/password/forgot", { email });
-      toast.success(data.message || "If the account exists, a reset link will be sent.");
-      setDevToken(data.resetToken ?? null);
+      const { data } = await API.post<{ message: string; verificationToken?: string }>(
+        "/auth/resend-verification",
+        { email }
+      );
+      toast.success(data.message || "Verification email sent.");
+      setDevToken(data.verificationToken ?? null);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Request failed.");
+      toast.error(err.response?.data?.message || "Failed to resend.");
     } finally {
       setLoading(false);
     }
@@ -30,15 +33,15 @@ export default function ForgotPassword() {
 
   return (
     <AuthShell
-      title="Forgot your password?"
-      subtitle="No worries. We’ll help you reset it securely."
+      title="Resend verification"
+      subtitle="We’ll send a new verification link to your email."
       footer={
         <div className="flex items-center justify-between gap-3 text-sm">
           <Link to="/" className="text-slate-600 hover:text-slate-900">
             Back to login
           </Link>
-          <Link to="/register" className="text-cyan-700 hover:text-cyan-800">
-            Create account
+          <Link to="/verify-email" className="text-cyan-700 hover:text-cyan-800">
+            Have a token? Verify now
           </Link>
         </div>
       }
@@ -56,7 +59,7 @@ export default function ForgotPassword() {
         </div>
 
         <Button loading={loading} onClick={() => void onSubmit()}>
-          Send reset link
+          Send verification email
         </Button>
 
         {devToken ? (
@@ -75,8 +78,8 @@ export default function ForgotPassword() {
               >
                 Copy token
               </Button>
-              <Link to={`/reset-password?token=${encodeURIComponent(devToken)}`}>
-                <Button variant="primary">Open reset page</Button>
+              <Link to={`/verify-email?token=${encodeURIComponent(devToken)}`}>
+                <Button variant="primary">Open verify page</Button>
               </Link>
             </div>
           </div>

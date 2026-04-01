@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import API from "../../services/api";
-import AuthShell from "../../components/auth/AuthShell";
-import { Button, Input, Label } from "../../components/auth/Ui";
+import API from "../../../../services/api";
+import AuthShell from "../../../../components/auth/AuthShell";
+import { Button, Input, Label } from "../../../../components/auth/Ui";
 
-export default function ResendVerification() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [devToken, setDevToken] = useState<string | null>(null);
@@ -18,14 +18,11 @@ export default function ResendVerification() {
     setLoading(true);
     setDevToken(null);
     try {
-      const { data } = await API.post<{ message: string; verificationToken?: string }>(
-        "/auth/resend-verification",
-        { email }
-      );
-      toast.success(data.message || "Verification email sent.");
-      setDevToken(data.verificationToken ?? null);
+      const { data } = await API.post<{ message: string; resetToken?: string }>("/auth/password/forgot", { email });
+      toast.success(data.message || "If the account exists, a reset link will be sent.");
+      setDevToken(data.resetToken ?? null);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to resend.");
+      toast.error(err.response?.data?.message || "Request failed.");
     } finally {
       setLoading(false);
     }
@@ -33,15 +30,15 @@ export default function ResendVerification() {
 
   return (
     <AuthShell
-      title="Resend verification"
-      subtitle="We’ll send a new verification link to your email."
+      title="Forgot your password?"
+      subtitle="No worries. We’ll help you reset it securely."
       footer={
         <div className="flex items-center justify-between gap-3 text-sm">
           <Link to="/" className="text-slate-600 hover:text-slate-900">
             Back to login
           </Link>
-          <Link to="/verify-email" className="text-cyan-700 hover:text-cyan-800">
-            Have a token? Verify now
+          <Link to="/register" className="text-cyan-700 hover:text-cyan-800">
+            Create account
           </Link>
         </div>
       }
@@ -59,7 +56,7 @@ export default function ResendVerification() {
         </div>
 
         <Button loading={loading} onClick={() => void onSubmit()}>
-          Send verification email
+          Send reset link
         </Button>
 
         {devToken ? (
@@ -78,8 +75,8 @@ export default function ResendVerification() {
               >
                 Copy token
               </Button>
-              <Link to={`/verify-email?token=${encodeURIComponent(devToken)}`}>
-                <Button variant="primary">Open verify page</Button>
+              <Link to={`/reset-password?token=${encodeURIComponent(devToken)}`}>
+                <Button variant="primary">Open reset page</Button>
               </Link>
             </div>
           </div>

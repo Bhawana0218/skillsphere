@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { QRCodeCanvas } from "qrcode.react";
-import API from "../../services/api";
-import { Button, Input, Label } from "../../components/auth/Ui";
+import API from "../../../services/api";
+import { Button, Input, Label } from "../../../components/auth/Ui";
 
 type Enable2faResponse = {
   message: string;
@@ -77,15 +77,14 @@ export default function TwoFactorSetup() {
   };
 
   useEffect(() => {
-    // auto-generate first time for a smooth experience
+    //auto generate on first time visit
     void generate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6">
-        <div className="text-2xl font-semibold">Security</div>
+        <div className="text-2xl mt-8 font-semibold">Security</div>
         <div className="mt-2 text-sm text-white/70">
           Enable Two-Factor Authentication (2FA) to protect your SkillSphere account.
         </div>

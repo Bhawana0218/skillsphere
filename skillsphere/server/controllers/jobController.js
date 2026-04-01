@@ -34,35 +34,46 @@ export const getJobById = async (req, res) => {
 
 
 
-
-// ADVANCED SEARCH
 export const searchJobs = async (req, res) => {
   try {
-    const { keyword, minBudget, maxBudget, skills } = req.query;
+    const { keyword, minBudget, maxBudget, skills, sortBy, status } = req.query;
 
     let query = {};
 
-    // Keyword search
     if (keyword) {
       query.title = { $regex: keyword, $options: "i" };
     }
 
-    // Budget filter
     if (minBudget || maxBudget) {
       query.budget = {};
       if (minBudget) query.budget.$gte = Number(minBudget);
       if (maxBudget) query.budget.$lte = Number(maxBudget);
     }
 
-    // Skills filter
     if (skills) {
-      query.skillsRequired = { $in: skills.split(",") };
+      query.skillsRequired = {
+        $in: skills.split(",").map(s => new RegExp(s.trim(), "i"))
+      };
     }
 
-    const jobs = await Job.find(query).populate("client", "name");
+    if (status) {
+      query.status = status;
+    }
+
+    let jobsQuery = Job.find(query);
+
+    if (sortBy === "newest") jobsQuery = jobsQuery.sort({ createdAt: -1 });
+    else if (sortBy === "oldest") jobsQuery = jobsQuery.sort({ createdAt: 1 });
+    else if (sortBy === "budget-asc") jobsQuery = jobsQuery.sort({ budget: 1 });
+    else if (sortBy === "budget-desc") jobsQuery = jobsQuery.sort({ budget: -1 });
+
+    const jobs = await jobsQuery.lean();
 
     res.json(jobs);
+
   } catch (error) {
+    console.error("🔥 ERROR:", error);
     res.status(500).json({ message: error.message });
   }
 };
+

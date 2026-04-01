@@ -6,25 +6,25 @@ import MainLayout from "./layouts/MainLayout";
 
 // Pages
 import Home from "./pages/Home";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import VerifyEmail from "./pages/auth/VerifyEmail";
-import ResendVerification from "./pages/auth/ResendVerification";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import TwoFactorSetup from "./pages/auth/TwoFactorSetup";
-import VerifyRequired from "./pages/auth/VerifyRequired";
-import Dashboard from "./pages/Dashboard";
-import Jobs from "./pages/Jobs";
-import CreateJob from "./pages/CreateJob";
-import JobDetails from "./pages/JobDetails";
-import Freelancers from "./pages/Freelancers";
-import Profile from "./pages/Profile";
+import Login from "./pages/auth/access/login/Login";
+import Register from "./pages/auth/access/register/Register";
+import VerifyEmail from "./pages/auth/emailVerification/VerifyEmail";
+import ResendVerification from "./pages/auth/resendVeification/ResendVerification";
+import ForgotPassword from "./pages/auth/password/forgetPassword/ForgotPassword";
+import ResetPassword from "./pages/auth/password/forgetPassword/resetPassword/ResetPassword";
+import TwoFactorSetup from "./pages/auth/twoFactorSetup/TwoFactorSetup";
+import VerifyRequired from "./pages/auth/emailVerification/VerifyRequired";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Jobs from "./pages/jobs/job/Jobs";
+import CreateJob from "./pages/jobs/createNewJob/CreateJob";
+import JobDetails from "./pages/jobs/job/jobDetail/JobDetails";
+import Freelancers from "./pages/findFreelancers/Freelancers";
+import Profile from "./pages/auth/Profile";
 import Proposals from "./pages/Proposals";
 import BookSlot from "./pages/BookSlot";
 import FreelancerDashboardPage from "./pages/freelancer/Dashboard";
 import FreelancerProfilePage from "./pages/freelancer/Profile";
-
+import Footer from "./layouts/Footer/Footer";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 
 // Components
@@ -34,21 +34,30 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 
 function App() {
   return (
+    <>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
       <BrowserRouter>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: "#0B1020",
-              color: "#E5E7EB",
-              border: "1px solid rgba(255,255,255,0.08)",
-            },
-          }}
-        />
+      <Toaster
+  position="top-right"
+  toastOptions={{
+    style: {
+      borderRadius: "12px",
+      background: "#0f172a",
+      color: "#fff",
+      padding: "12px 16px",
+    },
+    success: {
+      iconTheme: {
+        primary: "#06b6d4",
+        secondary: "#fff",
+      },
+    },
+  }}
+/>
         <Routes>
 
         {/* PUBLIC ROUTES */}
+        
        
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -60,14 +69,14 @@ function App() {
 
         {/*  PROTECTED ROUTES */}
 
-
+        {/* <Route element={<MainLayout />}> */}
          <Route
           path="/home"
           element={
             <ProtectedRoute>
               <MainLayout>
                 <Home />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -78,7 +87,7 @@ function App() {
             <ProtectedRoute>
                <MainLayout>
                 <Dashboard />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -87,7 +96,7 @@ function App() {
           path="/freelancer-dashboard"
           element={
             <ProtectedRoute>
-               <MainLayout>
+              <MainLayout>
                 <FreelancerDashboard />
               </MainLayout>
             </ProtectedRoute>
@@ -99,9 +108,9 @@ function App() {
           element={
             <ProtectedRoute>
               <MainLayout>
-                <TwoFactorSetup />
-              </MainLayout>
-            </ProtectedRoute>
+               <TwoFactorSetup />
+               </MainLayout>
+             </ProtectedRoute>
           }
         />
 
@@ -110,9 +119,9 @@ function App() {
           path="/freelancer/dashboard"
           element={
             <ProtectedRoute>
-              <MainLayout>
+             <MainLayout>
                 <FreelancerDashboardPage />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -121,9 +130,9 @@ function App() {
           path="/freelancer/profile"
           element={
             <ProtectedRoute>
-              <MainLayout>
+             <MainLayout>
                 <FreelancerProfilePage />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -132,9 +141,9 @@ function App() {
           path="/client/dashboard"
           element={
             <ProtectedRoute>
-              <MainLayout>
+             <MainLayout>
                <ClientDashboard onBack={()=> null}/>
-              </MainLayout>
+            </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -142,18 +151,18 @@ function App() {
          <Route
           path="/jobs"
           element={
-            // <MainLayout>
+           <MainLayout>
               <Jobs />
-            // </MainLayout>
+            </MainLayout>
           }
         />
 
           <Route
           path="/jobs/:id"
           element={
-            // <MainLayout>
+           <MainLayout>
               <JobDetails />
-            // </MainLayout>
+            </MainLayout>
           }
         />
 
@@ -161,9 +170,9 @@ function App() {
           path="/create-job"
           element={
             <ProtectedRoute>
-              <MainLayout>
+            <MainLayout>
                 <CreateJob />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -171,9 +180,10 @@ function App() {
         <Route
           path="/freelancers"
           element={
-            <MainLayout>
+           <MainLayout>
               <Freelancers />
-           </MainLayout>
+              </MainLayout>
+          
           }
         />
 
@@ -181,9 +191,9 @@ function App() {
           path="/profile"
           element={
             <ProtectedRoute>
-              <MainLayout>
+             <MainLayout>
                 <Profile />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -204,7 +214,9 @@ function App() {
           path="/proposals/:jobId"
           element={
             <ProtectedRoute>
-              <Proposals />
+              <MainLayout>
+                <Proposals />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -215,19 +227,23 @@ function App() {
           path="/book-slot/:freelancerId/:jobId"
           element={
             <ProtectedRoute>
-              <MainLayout>
+             <MainLayout>
                <BookSlot />
-              </MainLayout>
+             </MainLayout>
             </ProtectedRoute>
           }
         />
 
         {/*  FALLBACK */}
         <Route path="*" element={<h1 className="text-white text-center mt-10">404 - Page Not Found</h1>} />
+        
+        {/* </Route> */}
 
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
+    <Footer />
+    </>
   );
 }
 
