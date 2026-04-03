@@ -4,6 +4,8 @@ import type { ChangeEvent } from "react";
 import API from "../../../../services/api";
 import { useParams } from "react-router-dom";
 import  toast  from "react-hot-toast"; 
+import { useNavigate } from "react-router-dom";
+
 
 // Job Type
 interface Job {
@@ -12,6 +14,9 @@ interface Job {
   description: string;
   budget: string;
   skillsRequired: string[];
+  postedBy: string;
+  status?: "open" | "closed";
+  proposalCount?: number;
 }
 
 // Proposal Type
@@ -21,6 +26,13 @@ interface Proposal {
   coverLetter: string;
 }
 
+interface User {
+  _id: string;
+  role: "client" | "freelancer";
+}
+
+// const [user, setUser] = useState<User | null>(null);
+
 function JobDetails() {
   const { id } = useParams<{ id?: string }>();
 
@@ -29,7 +41,14 @@ function JobDetails() {
   const [applied, setApplied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [user, setUser] = useState<{ role: string } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [user, setUser] = useState<User | null>(null);
+
+  const navigate = useNavigate();
+
+  const isOwner = user?.role === "client" && user?._id === job?.postedBy;
+
 
  useEffect(() => {
   const storedUser = localStorage.getItem("user");
@@ -51,9 +70,14 @@ function JobDetails() {
 
   // Fetch Job
   const fetchJob = async () => {
+
     try {
       const { data } = await API.get<Job>(`/jobs/${id}`);
       setJob(data);
+
+      const res = await API.get(`/proposals/check/${data._id}`);
+      setApplied(res.data.applied);
+
     } catch (error) {
       console.error(error);
     } finally {
@@ -94,6 +118,25 @@ function JobDetails() {
       setIsSubmitting(false);
     }
   };
+
+  const handleDelete = async () => {
+  if (!job?._id) return;
+
+  try {
+    setIsSubmitting(true);
+
+    await API.put(`/jobs/${job._id}`, { isDeleted: true });
+
+    toast.success("Job deleted successfully!");
+
+    navigate("/jobs"); 
+  } catch (error: any) {
+    console.error(error);
+    toast.error(error.response?.data?.message || "Delete failed");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Invalid ID
   if (!id) {
@@ -166,12 +209,70 @@ function JobDetails() {
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-white">{job.title}</h1>
+             <div className="flex items-center gap-3 mt-1 text-sm text-white/80">
+  <span>{job.proposalCount || 0} Proposals</span>
+
+  <span
+    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+      job.status === "closed"
+        ? "bg-red-100 text-red-600"
+        : "bg-green-100 text-green-600"
+    }`}
+  >
+    {job.status === "closed" ? "Closed" : "Open"}
+  </span>
+</div>
             </div>
           </div>
           
           <div className="p-6">
             <p className="text-gray-700 leading-relaxed text-lg">{job.description}</p>
-            
+
+            {/* for the client role */}
+
+            {isOwner && (
+  <div className="mt-8 flex flex-wrap gap-3 border-t pt-6">
+    
+    {/* Edit */}
+    <button
+      onClick={() => navigate(`/jobs/edit/${job._id}`)}
+      className="px-5 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white font-medium shadow-md transition"
+    >
+      ✏️ Edit Job
+    </button>
+
+    {/* Delete */}
+    <button
+      onClick={() => setShowDeleteModal(true)}
+      disabled={isSubmitting}
+      className="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium shadow-md transition disabled:opacity-50"
+    >
+      🗑️ {isSubmitting ? "Deleting..." : "Delete Job"}
+    </button>
+
+    {/* View Proposals */}
+    <button
+      onClick={() => navigate(`/jobs/${job._id}/proposals`)}
+      className="px-5 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-md transition"
+    >
+      📄 View Proposals
+    </button>
+
+    <button
+  onClick={async () => {
+    await API.put(`/jobs/${job._id}`, { status: "closed" });
+    toast.success("Job marked as closed");
+    fetchJob();
+  }}
+  className="px-5 py-2.5 rounded-xl bg-gray-700 hover:bg-gray-800 text-white"
+>
+  🔒 Close Job
+</button>
+
+
+  </div>
+)}
+
             {/* Skills Tags */}
             {job.skillsRequired?.length > 0 && (
               <div className="mt-6">
@@ -211,6 +312,16 @@ function JobDetails() {
         <div className="bg-white rounded-2xl shadow-xl shadow-cyan-100/50 border border-cyan-100 overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-200/50">
           
         {user?.role === "freelancer" ? (
+          job.status === "closed" ? (
+    <div className="p-10 text-center">
+      <h3 className="text-xl font-bold text-red-500 mb-2">
+        Applications Closed 🚫
+      </h3>
+      <p className="text-gray-500">
+        This job is no longer accepting proposals.
+      </p>
+    </div>
+  ) : (
           <>
           <div className="bg-cyan-500 px-6 py-4">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -306,6 +417,12 @@ function JobDetails() {
                   <p className="mt-1.5 text-xs text-gray-500">Highlight your relevant experience and approach</p>
                 </div>
 
+                {applied && (
+                    <div className="mb-4 text-green-600 font-medium">
+                        ✅ You already applied to this job
+                     </div>
+                )}
+
                 {/* Submit Button */}
                 <button
                   type="submit"
@@ -337,7 +454,7 @@ function JobDetails() {
             )}
           </div>
           </>
-        ):(
+        )):(
           <div className="p-10 text-center">
       
       <div className="w-22 h-22 mx-auto mb-6 bg-linear-to-br from-cyan-100 to-blue-100 rounded-full flex items-center justify-center">
@@ -366,7 +483,7 @@ function JobDetails() {
 
       <button
         onClick={() => toast(
-      "🚀 Switch role feature coming soon!\n\n👉 Register as a freelancer to apply for jobs.")}
+      " Switch role feature coming soon!\n\n Register as a freelancer to apply for jobs.")}
         className="px-6 py-2 bg-linear-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-medium hover:scale-105 transition"
       >
         Switch to Freelancer
@@ -386,6 +503,36 @@ function JobDetails() {
           </p>
         </div>
       </div>
+
+      {showDeleteModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md">
+      <h2 className="text-lg font-semibold mb-3">Confirm Delete</h2>
+      <p className="text-gray-500 mb-6">
+        Are you sure you want to delete this job?
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setShowDeleteModal(false)}
+          className="px-4 py-2 bg-gray-200 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={async () => {
+            await handleDelete();
+            setShowDeleteModal(false);
+          }}
+          className="px-4 py-2 bg-red-500 text-white rounded-lg"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

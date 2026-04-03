@@ -1,13 +1,13 @@
-
 import { useEffect, useState} from "react";
 import API from "../../../services/api";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 import { 
   PlusIcon,
   MagnifyingGlassIcon,  
   FunnelIcon,           
-  TrashIcon,            
-  XMarkIcon,             
+  TrashIcon,                        
   CheckCircleIcon,
   ExclamationCircleIcon,
   ClockIcon,
@@ -29,7 +29,7 @@ interface Job {
   skillsRequired: string[];
   company: string;
   location: string;
-  postedBy: string;
+  postedBy: string | { _id: string };
   postedAt: Date | string;
   status: "active" | "closed" | "pending";
   applicationCount?: number;
@@ -87,11 +87,11 @@ interface Filters {
   };
 
 export default function JobsDashboard() {
-  // const navigate = useNavigate();
+
+  const navigate = useNavigate();
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [filters, setFilters] = useState<Filters>({
     keyword: "",
     minBudget: "",
@@ -105,18 +105,9 @@ export default function JobsDashboard() {
     type: "success" | "error" | "info";
     message: string;
   } | null>(null);
-  
-  // Form State
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    budget: 0,
-    skillsRequired: "" as string | string[],
-    company: "",
-    location: "",
-    status: "active" as "active" | "closed" | "pending",
-  });
 
+  const [latestJob, setLatestJob] = useState<Job | null>(null);
+  
   const [stats, setStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -148,6 +139,25 @@ export default function JobsDashboard() {
     }
   };
 
+  const fetchLatestJob = async () => {
+  try {
+    const { data } = await API.get("/jobs/latest-job");
+    setLatestJob(data);
+  } catch (error) {
+    console.error("Error fetching latest job:", error);
+  }
+};
+
+  useEffect(() => {
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+
+  fetchJobs();
+  fetchLatestJob(); 
+}, []);
+
   // Calculate statistics
   const calculateStats = (jobData: Job[]) => {
     setStats({
@@ -162,96 +172,6 @@ export default function JobsDashboard() {
   const showNotification = (type: "success" | "error" | "info", message: string) => {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 3000);
-  };
-
-  // Open modal for creating new job
-  const openModal = (job: Job | null = null) => {
-    if (job) {
-      setEditingJob(job);
-      setFormData({
-        title: job.title,
-        description: job.description,
-        budget: job.budget,
-        skillsRequired: Array.isArray(job.skillsRequired) ? job.skillsRequired.join(", ") : job.skillsRequired,
-        company: job.company,
-        location: job.location,
-        status: job.status,
-      });
-    } else {
-      setEditingJob(null);
-      setFormData({
-        title: "",
-        description: "",
-        budget: Number(0),
-        skillsRequired: "",
-        company: "",
-        location: "",
-        status: "active",
-      });
-    }
-    setShowModal(true);
-  };
-
-  // Close modal
-  const closeModal = () => {
-    setShowModal(false);
-    setEditingJob(null);
-    setFormData({
-      title: "",
-      description: "",
-      budget: Number(0),
-      skillsRequired: "",
-      company: "",
-      location: "",
-      status: "active",
-    });
-  };
-
-  // Handle form input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Create or Update job
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user) {
-      showNotification("error", "Please log in to manage jobs");
-      return;
-    }
-
-    try {
-      const payload = {
-        ...formData,
-        skillsRequired: typeof formData.skillsRequired === "string" 
-          ? formData.skillsRequired.split(",").map((s) => s.trim()).filter((s) => s)
-          : formData.skillsRequired,
-        postedBy: user._id,
-        postedAt: new Date().toISOString(),
-      };
-
-      if (editingJob) {
-        const response = await API.put(`/jobs/${editingJob._id}`, payload);
-        showNotification("success", `Job updated successfully!`);
-         console.log(response.data);
-      } else {
-        const response = await API.post("/jobs", payload);
-        showNotification("success", `Job created successfully!`);
-         console.log(response.data);
-      }
-     
-
-      closeModal();
-      fetchJobs();
-    } catch (error: any) {
-      console.error("Job save error:", error);
-      showNotification(
-        "error",
-        error.response?.data?.message || "Failed to save job"
-      );
-    }
   };
 
   // Delete job
@@ -371,13 +291,18 @@ export default function JobsDashboard() {
               )}
 
               {/* Add Job Button */}
-              <button
-                onClick={() => openModal()}
-                className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-                <PlusIcon className="w-5 h-5" />
-                <span className="hidden sm:inline">Post New Job</span>
-              </button>
+
+              {user?.role === "client" && (
+                <Link
+                to="/create-job"
+                className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg"
+                 >
+                  <PlusIcon className="w-5 h-5" />
+                  <span className="hidden sm:inline">Create Job</span>
+                </Link>
+              )}
+
+              {/* <Link to="/create-job">+ Post New Job</Link> */}
             </div>
           </div>
         </div>
@@ -531,6 +456,27 @@ export default function JobsDashboard() {
           </div>
         </motion.div>
 
+        {latestJob && (
+  <div className="mb-8 p-6 rounded-xl bg-linear-to-r from-cyan-600 to-blue-600 text-white shadow-lg">
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-sm opacity-80"> Latest Job</p>
+        <h2 className="text-xl font-bold">{latestJob.title}</h2>
+        <p className="text-sm opacity-90">
+          {latestJob.company} • {latestJob.postedAt ? formatDate(latestJob.postedAt): "Just Now"}
+        </p>
+      </div>
+
+      <Link
+        to={`/jobs/${latestJob._id}`}
+        className="bg-white text-cyan-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100"
+      >
+        View
+      </Link>
+    </div>
+  </div>
+)}
+
         {/* Jobs Grid */}
         <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
           <BriefcaseIcon className="w-6 h-6 text-cyan-600" />
@@ -570,14 +516,16 @@ export default function JobsDashboard() {
               {filters.keyword || filters.status ? "Try adjusting your filters" : "Start by posting your first job"}
             </p>
             {!filters.keyword && !filters.status && (
-              <button
-                onClick={() => openModal()}
-                className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-                <PlusIcon className="w-5 h-5" />
-                Post Your First Job
-              </button>
+              <Link to="/create-job">
+                <button
+                  className="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <PlusIcon className="w-5 h-5" />
+                  Post Your First Job
+                </button>
+              </Link>
             )}
+            {/* )} */}
           </motion.div>
         ) : (
           /* Jobs Grid */
@@ -595,195 +543,21 @@ export default function JobsDashboard() {
           >
             {jobs.map((job) => (
               <JobCard
-                key={job._id}
-                job={job}
-                onEdit={() => openModal(job)}
-                onDelete={() => deleteJob(job._id)}
-                canEdit={user?._id === job.postedBy}
+               key={job._id}
+               job={job}
+               onEdit={() => navigate(`/create-job/${job._id}`)}
+               onDelete={() => deleteJob(job._id)}
+               canEdit={
+                  user?._id ===
+                    (typeof job.postedBy === "string"
+                    ? job.postedBy
+                 : job.postedBy?._id)
+                    }
               />
             ))}
           </motion.div>
         )}
       </main>
-
-      {/* Modal for Create/Edit Job */}
-      <AnimatePresence>
-        {showModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-            onClick={closeModal}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: -50, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -50, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-            >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {editingJob ? "Edit Job" : "Post New Job"}
-                  </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Fill in the details below
-                  </p>
-                </div>
-                <button
-                  onClick={closeModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <XMarkIcon  className="w-6 h-6 text-gray-500" />
-                </button>
-              </div>
-
-              {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Job Title *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    required
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="Senior Frontend Developer"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-blackfocus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Company */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="company"
-                    required
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    placeholder="Acme Technologies"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 text-black focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Location & Status Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Location *
-                    </label>
-                    <input
-                      type="text"
-                      name="location"
-                      required
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      placeholder="Remote / Bangalore / Mumbai"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 text-blackrounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                    >
-                      <option value="active">Active</option>
-                      <option value="pending">Pending Review</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Budget */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget Range (₹) *
-                  </label>
-                  <input
-                    type="number"
-                    name="budget"
-                    required
-                    value={formData.budget}
-                    onChange={handleInputChange}
-                    placeholder="1000000"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-blackfocus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                  />
-                </div>
-
-                {/* Skills Required */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Skills Required (comma separated) *
-                  </label>
-                  <input
-                    type="text"
-                    name="skillsRequired"
-                    required
-                    value={formData.skillsRequired}
-                    onChange={handleInputChange}
-                    placeholder="React, TypeScript, Node.js, MongoDB"
-                    className="w-full px-4 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Separate multiple skills with commas
-                  </p>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Job Description *
-                  </label>
-                  <textarea
-                    name="description"
-                    required
-                    rows={6}
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe the job responsibilities, requirements, and benefits..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-all resize-none"
-                  />
-                </div>
-              </form>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-all duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    onClick={handleSubmit}
-                    className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-                  >
-                    {editingJob ? "Update Job" : "Post Job"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

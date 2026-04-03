@@ -137,7 +137,19 @@ const getMonthlyEarnings = async (userId) => {
   ];
 };
 
-export { getDashboard, updateProfile};
+export const getMyProposals = async (req, res) => {
+  try {
+    const proposals = await Proposal.find({
+      freelancer: req.user._id
+    }).populate("job");
+
+    res.json(proposals);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export { getDashboard, updateProfile, getCategoryColor, calculateProfileCompletion, getMonthlyEarnings };
 // module.exports = {
 //   getDashboard,
 //   updateProfile

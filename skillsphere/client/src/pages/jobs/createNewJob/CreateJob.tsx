@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import type { ChangeEvent, FormEvent } from "react";
 import toast from "react-hot-toast";
 import API from "../../../services/api";
@@ -14,6 +15,9 @@ interface JobForm {
 }
 
 function CreateJob() {
+
+  const navigate = useNavigate();
+
   const [job, setJob] = useState<JobForm>({
     title: "",
     description: "",
@@ -35,42 +39,98 @@ function CreateJob() {
     });
   };
 
-  // Submit Handler
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    const toastId = toast.loading("Publishing your job... ");
+  const toastId = toast.loading(
+    isEditMode ? "Updating job..." : "Publishing job..."
+  );
 
-    try {
-      await API.post("/jobs", {
-        ...job,
-        skillsRequired: job.skillsRequired
-          .split(",")
-          .map((s) => s.trim()), // clean values
-      });
+  try {
+    const payload = {
+      ...job,
+      budget: Number(job.budget),
+      skillsRequired: job.skillsRequired
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
+    };
 
-      toast.success("Job posted successfully!", { id: toastId });
-      // Optional: Reset form after success
-      setJob({
-        title: "",
-        description: "",
-        skillsRequired: "",
-        budget: "",
-        deadline: "",
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
+    if (isEditMode) {
+      await API.put(`/jobs/${id}`, payload);
+      toast.success("Job updated successfully!", { id: toastId });
+    } else {
+      await API.post("/jobs", payload);
+
+      toast.success("Job created successfully!", { id: toastId });
     }
-  };
+
+    navigate("/jobs");
+  } catch (error: any) {
+    console.error(error);
+    toast.error(error?.response?.data?.message || "Something went wrong", {
+      id: toastId,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Preview skills as tags
   const previewSkills = job.skillsRequired
     .split(",")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  const { id } = useParams();
+
+  useEffect(() => {
+  if (id) {
+    API.get(`/jobs/${id}`)
+      .then((res) => {
+        const data = res.data;
+
+        setJob({
+          title: data.title || "",
+          description: data.description || "",
+          skillsRequired: (data.skillsRequired || []).join(", "),
+          budget: data.budget?.toString() || "",
+          deadline: data.deadline?.split("T")[0] || "",
+        });
+      })
+      .catch(() => {
+        toast.error("Failed to load job");
+      });
+  }
+}, [id]);
+
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  if (user.role !== "client") {
+    toast.error("Access denied");
+    navigate("/");
+  }
+}, []);
+
+useEffect(() => {
+  if (isEditMode && id) {
+    API.get(`/jobs/${id}`).then((res) => {
+      const data = res.data;
+
+      setJob({
+        title: data.title,
+        description: data.description,
+        skillsRequired: data.skillsRequired.join(", "),
+        budget: data.budget,
+        deadline: data.deadline,
+      });
+    });
+  }
+}, [id]);
+
+  const isEditMode = Boolean(id);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-cyan-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -83,7 +143,7 @@ function CreateJob() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold bg-cyan-600 bg-clip-text text-transparent">
-            Post a New Job
+            {isEditMode ? "Edit Job" : "Post a New Job"}
           </h1>
           <p className="mt-2 text-gray-600">
             Fill in the details below to attract top talent to your project
@@ -279,6 +339,28 @@ function CreateJob() {
               </div>
             </div>
 
+         {isEditMode && (
+          <button
+            type="button"
+            onClick={async () => {
+            if (!window.confirm("Delete this job?")) return;
+
+             const toastId = toast.loading("Deleting job...");
+
+             try {
+              await API.delete(`/jobs/${id}`);
+              toast.success("Job deleted!", { id: toastId });
+              navigate("/jobs");
+             } catch (error) {
+             toast.error("Failed to delete job", { id: toastId });
+             }
+           }}
+              className="w-full mb-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition"
+            >
+              Delete Job
+            </button>
+           )}
+
             {/* Submit Button */}
             <div className="pt-4 border-t border-gray-100">
               <button
@@ -296,11 +378,11 @@ function CreateJob() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Publishing Job...
+                   {isEditMode ? "Updating Job..." : "Publishing Job..."}
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    Post Job Now
+                    {isEditMode ? "Update Job" : "Post Job Now"}
                   </span>
                 )}
               </button>

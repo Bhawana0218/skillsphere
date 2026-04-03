@@ -23,4 +23,6 @@ const proposalSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+proposalSchema.index({ job: 1, freelancer: 1 }, { unique: true });
+
 export default mongoose.model("Proposal", proposalSchema);

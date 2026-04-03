@@ -32,15 +32,11 @@ interface ChartDataItem {
   color: string;
 }
 
-interface DashboardResponse {
-  earnings: number;
-  completedJobs: number;
-  rating: number;
-  activeProposals: number;
-  completionRate: number;
-  responseTime: string;
-  revenueDistribution: ChartDataItem[];
-  monthlyEarnings: { month: string; amount: number }[];
+interface Analytics {
+  totalProposals: number;
+  totalEarnings: number;
+  avgRating: number;
+  totalReviews: number;
 }
 
 export interface FreelancerProfileData {
@@ -55,7 +51,7 @@ export interface FreelancerProfileData {
 
 interface FreelancerDashboardProps {
   onBack: () => void;
-  onEditProfile: () => void; // ✅ New prop for navigation
+  onEditProfile: () => void; 
   profileData?: FreelancerProfileData;
 }
 
@@ -77,43 +73,32 @@ const FreelancerDashboard: React.FC<FreelancerDashboardProps> = ({ onBack, onEdi
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await api.get<DashboardResponse>('/freelancer/dashboard');
-      
+      const response = await api.get<Analytics>('/analytics');
       const data = response.data;
       
       setStats({
-        earnings: data.earnings,
-        jobs: data.completedJobs,
-        rating: data.rating,
-        proposals: data.activeProposals,
-        completionRate: data.completionRate,
-        responseTime: data.responseTime
+        earnings: data.totalEarnings,
+        jobs: data.totalReviews, // or keep 0 if not available
+        rating: data.avgRating,
+        proposals: data.totalProposals,
+        completionRate: 90, // dummy (optional)
+        responseTime: "2h"
       });
-      setRevenueData(data.revenueDistribution);
+
+      setRevenueData([
+  { name: 'Earnings', value: 100, color: '#06B6D4' }
+]);
     } catch (error) {
       console.error('Dashboard fetch error:', error);
       // Fallback demo data
-      setStats({
-        earnings: 125000,
-        jobs: 12,
-        rating: 4.8,
-        proposals: 5,
-        completionRate: 92,
-        responseTime: '2.4h'
-      });
-      setRevenueData([
-        { name: 'Web Dev', value: 45, color: '#06B6D4' },
-        { name: 'Mobile', value: 25, color: '#3B82F6' },
-        { name: 'Design', value: 18, color: '#8B5CF6' },
-        { name: 'Other', value: 12, color: '#64748B' },
-      ]);
-      toast.error("Using demo data - connect backend for live stats");
+
+      toast.error("Failed to load dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
+ useEffect(() => {
     fetchDashboardData();
   }, []);
 

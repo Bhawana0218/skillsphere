@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import API from "../services/api";
+import API from "../../services/api";
 
 // Socket instance
 const socket = io("http://localhost:5000");

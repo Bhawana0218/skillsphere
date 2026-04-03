@@ -1,4 +1,4 @@
-import API from "../services/api";
+import API from "../../services/api";
 
 // Declare Razorpay type on window
 declare global {

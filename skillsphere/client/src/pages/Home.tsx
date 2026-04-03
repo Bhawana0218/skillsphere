@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
-  Search, Code, ShieldCheck, Zap, MessageSquare, Menu, X, MapPin, Star, 
+  Search, Code, ShieldCheck, Zap, MessageSquare,X, MapPin, Star, 
   Clock, CheckCircle, Heart, ChevronDown,
   Bell, ArrowRight, Globe, Lock, TrendingUp,
   AlertCircle
@@ -295,7 +295,6 @@ const SkillSphereHome: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"newest" | "budget-high" | "budget-low" | "applications">("newest");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isPostProjectModalOpen, setIsPostProjectModalOpen] = useState(false);
@@ -463,50 +462,8 @@ const SkillSphereHome: React.FC = () => {
                 </motion.a>
               ))}
             </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-                className="p-2 text-slate-600"
-              >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t border-slate-200 overflow-hidden"
-            >
-              <div className="px-4 py-6 space-y-4">
-                {["Find Work", "Find Talent", "How it Works", "Pricing"].map((item) => (
-                  <a 
-                    key={item} 
-                    href="#" 
-                    className="block py-2 text-slate-700 font-medium hover:text-cyan-600 transition-colors"
-                  >
-                    {item}
-                  </a>
-                ))}
-                <div className="pt-4 border-t border-slate-200 space-y-3">
-                  <button className="w-full py-3 text-slate-700 font-medium border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors">
-                    Log In
-                  </button>
-                  <button className="w-full bg-linear-to-r from-blue-600 to-cyan-500 text-white py-3 rounded-xl font-semibold shadow-lg">
-                    Join Now
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.nav> 
 
       {/* --- Hero Section --- */}

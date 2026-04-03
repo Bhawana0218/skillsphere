@@ -24,12 +24,14 @@ import Proposals from "./pages/Proposals";
 import BookSlot from "./pages/BookSlot";
 import FreelancerDashboardPage from "./pages/freelancer/Dashboard";
 import FreelancerProfilePage from "./pages/freelancer/Profile";
+import FreelancerProposals from "./pages/freelancer/FreelancerProposals";
 import Footer from "./layouts/Footer/Footer";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientDashboard from "./pages/client/ClientDashboard";
+import ClientProposals from "./pages/client/ClientProposals";
 
 
 function App() {
@@ -42,7 +44,8 @@ function App() {
   toastOptions={{
     style: {
       borderRadius: "12px",
-      background: "#0f172a",
+      background: "#00072D",
+      // "#0A4B5F",
       color: "#fff",
       padding: "12px 16px",
     },
@@ -52,8 +55,8 @@ function App() {
         secondary: "#fff",
       },
     },
-  }}
-/>
+    }}
+   />
         <Routes>
 
         {/* PUBLIC ROUTES */}
@@ -76,6 +79,7 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                 <Home />
+                <Footer/>
              </MainLayout>
             </ProtectedRoute>
           }
@@ -91,6 +95,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/freelancer/proposals"
+         element={
+           <ProtectedRoute>
+             <MainLayout>
+              <FreelancerProposals />
+             </MainLayout>
+          </ProtectedRoute>} />
 
          <Route
           path="/freelancer-dashboard"
@@ -148,11 +160,24 @@ function App() {
           }
         />
 
+        <Route
+          path="/client/proposals"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <ClientProposals />
+                <Footer />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
          <Route
           path="/jobs"
           element={
            <MainLayout>
               <Jobs />
+               <Footer/>
             </MainLayout>
           }
         />
@@ -162,18 +187,8 @@ function App() {
           element={
            <MainLayout>
               <JobDetails />
+               <Footer/>
             </MainLayout>
-          }
-        />
-
-        <Route
-          path="/create-job"
-          element={
-            <ProtectedRoute>
-            <MainLayout>
-                <CreateJob />
-             </MainLayout>
-            </ProtectedRoute>
           }
         />
 
@@ -182,7 +197,7 @@ function App() {
           element={
            <MainLayout>
               <Freelancers />
-              </MainLayout>
+            </MainLayout>
           
           }
         />
@@ -204,6 +219,7 @@ function App() {
             <ProtectedRoute>
               <MainLayout>
                <CreateJob />
+                <Footer/>
               </MainLayout>
             </ProtectedRoute>
           }
@@ -211,11 +227,23 @@ function App() {
 
         {/* PROPOSALS */}
         <Route
-          path="/proposals/:jobId"
+          path="/jobs/:jobId/proposals"
           element={
             <ProtectedRoute>
               <MainLayout>
                 <Proposals />
+                 <Footer/>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:jobId/proposals/:proposalId"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <Proposals />
+                 <Footer/>
               </MainLayout>
             </ProtectedRoute>
           }
@@ -229,6 +257,7 @@ function App() {
             <ProtectedRoute>
              <MainLayout>
                <BookSlot />
+                <Footer/>
              </MainLayout>
             </ProtectedRoute>
           }
@@ -237,12 +266,11 @@ function App() {
         {/*  FALLBACK */}
         <Route path="*" element={<h1 className="text-white text-center mt-10">404 - Page Not Found</h1>} />
         
-        {/* </Route> */}
+       
 
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
-    <Footer />
     </>
   );
 }

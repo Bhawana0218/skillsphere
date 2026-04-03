@@ -9,7 +9,7 @@ const Footer = () =>{
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 ">
                 
-                  <img src='../Logo.png' alt='SkillSphere' className='w-54 h-44 mx-auto'/>
+                  <img src='../../Logo.png' alt='SkillSphere' className='w-54 h-44 mx-auto -my-10'/>
                 
               </div>
               <p className="text-slate-400 mb-6 leading-relaxed max-w-md">
@@ -71,7 +71,7 @@ const Footer = () =>{
           
           <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-sm text-slate-500">
-              © {new Date().getFullYear()} SkillSphere. All rights reserved. Crafted with ❤️ for the future of work.
+              &#169; {new Date().getFullYear()} SkillSphere. All rights reserved. Crafted with ❤️ for the future of work.
             </p>
             <div className="flex items-center gap-6">
               {["Terms", "Privacy", "Cookies", "Security"].map((item) => (

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { protect } from '../middleware/authMiddleware.js';
-import { getDashboard, updateProfile } from '../controllers/freelancerController.js';
+import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import { getDashboard, updateProfile, getMyProposals } from '../controllers/freelancerController.js';
 
 const router = Router();
 
@@ -9,5 +9,6 @@ router.use(protect);
 
 router.route('/dashboard').get(getDashboard);
 router.route('/profile').put(updateProfile);
+router.get("/freelancer/my", protect, authorizeRoles("freelancer"), getMyProposals);
 
 export default router;

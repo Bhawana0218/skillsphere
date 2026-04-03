@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type {ChangeEvent} from 'react';
-import API from "../services/api";
+import API from "../../services/api";
 
 // Props type
 interface FileDisputeProps {

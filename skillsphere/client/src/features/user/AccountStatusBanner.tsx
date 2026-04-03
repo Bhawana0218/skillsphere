@@ -1,12 +1,16 @@
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import API from "../services/api";
+import API from "../../services/api";
 
 type StoredUser = {
   email?: string;
   isVerified?: boolean;
   twoFactorEnabled?: boolean;
 };
+
+interface Props {
+  onClose: () => void;
+}
 
 function readUser(): StoredUser | null {
   try {
@@ -16,7 +20,7 @@ function readUser(): StoredUser | null {
   }
 }
 
-export default function AccountStatusBanner() {
+export default function AccountStatusBanner({ onClose }: Props) {
   const token = localStorage.getItem("token");
   const user = readUser();
 
@@ -88,7 +92,14 @@ export default function AccountStatusBanner() {
             </Link>
           ) : null}
         </div>
+        <button
+        onClick={onClose}
+        className="ml-4 text-white font-bold hover:opacity-70"
+      >
+        ✕
+      </button>
       </div>
+       
     </div>
   );
 }
