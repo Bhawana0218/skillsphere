@@ -236,16 +236,8 @@ import {
   FileText,
 } from "lucide-react";
 import API from "../services/api";
+import toast from "react-hot-toast";
 
-// Interfaces
-interface Job {
-  _id: string;
-  title: string;
-  description: string;
-  skillsRequired: string[];
-  budget: string;
-  deadline: string;
-}
 
 interface Proposal {
   _id: string;
@@ -291,44 +283,32 @@ const Navbar = () => {
   const role = currentUser?.role;
 
   // State management
-  const [latestJob, setLatestJob] = useState<Job | null>(null);
+  // const [latestJob, setLatestJob] = useState<Job | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [proposalsDropdownOpen, setProposalsDropdownOpen] = useState(false);
 
   // Fetch navbar data efficiently
   useEffect(() => {
-    let isMounted = true;
+    // let isMounted = true;
 
     const fetchData = async () => {
       if (!token || !currentUser?._id) {
-        setLoading(false);
         return;
       }
 
       try {
-        const [jobRes, propRes] = await Promise.allSettled([
-          API.get("/jobs/latest-job"),
-          role === "client" ? API.get(`/proposals/client/${currentUser._id}`) : Promise.resolve({ data: [] })
-        ]);
-
-        if (isMounted) {
-          if (jobRes.status === "fulfilled") setLatestJob(jobRes.value.data);
-          if (propRes.status === "fulfilled" && role === "client") {
-            setProposals(Array.isArray(propRes.value.data) ? propRes.value.data : []);
-          }
-        }
+        const res = await API.get(`/proposals/client/${currentUser._id}`);
+        setProposals(res.data || []);
       } catch (err) {
         console.error("Navbar fetch error:", err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+        toast.error("Failed to load Data!");
+      } 
     };
 
     fetchData();
-    return () => { isMounted = false; };
   }, [token, currentUser?._id, role]);
 
   // Close dropdowns on outside click
@@ -712,6 +692,7 @@ const Navbar = () => {
                     Latest: {latestJob.title?.slice(0, 22)}{latestJob.title && latestJob.title.length > 22 ? "..." : ""}
                   </NavLink>
                 )} */}
+               
               </>
             )}
 
