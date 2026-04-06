@@ -50,7 +50,6 @@ const FreelancerSchema = new Schema({
 }, { timestamps: true });
 
 // Indexes for faster queries
-FreelancerSchema.index({ userId: 1 });
 FreelancerSchema.index({ 'stats.rating': -1 });
 FreelancerSchema.index({ location: 1, 'stats.earnings': -1 });
 

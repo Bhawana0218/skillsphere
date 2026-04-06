@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import FreelancerProfile from '../../components/freelancer/profile/FreelancerProfile';
 import { checkAuth } from '../../utils/auth';
-import toast from 'react-hot-toast';
 import api from '../../services/api';
 import type { FreelancerProfileData } from '../../components/freelancer/dashboard/FreelancerDashboard';
 
@@ -14,6 +13,38 @@ const defaultProfileValues: FreelancerProfileData = {
   skills: [],
   bio: '',
   profileComplete: false,
+};
+
+const toProfileData = (raw: any): FreelancerProfileData => {
+  if (!raw) return defaultProfileValues;
+
+  const normalized: FreelancerProfileData = {
+    name: raw?.name || '',
+    title: raw?.title || '',
+    hourlyRate:
+      raw?.hourlyRate !== undefined && raw?.hourlyRate !== null
+        ? String(raw.hourlyRate)
+        : '',
+    location: raw?.location || '',
+    skills: Array.isArray(raw?.skills)
+      ? raw.skills.map((skill: any) => ({
+          name: skill?.name || '',
+          proficiency: Number(skill?.proficiency) || 50,
+        }))
+      : [],
+    bio: raw?.bio || '',
+    profileComplete: false,
+  };
+
+  normalized.profileComplete = Boolean(
+    normalized.name &&
+      normalized.title &&
+      normalized.bio &&
+      normalized.hourlyRate &&
+      normalized.skills.length > 0
+  );
+
+  return normalized;
 };
 
 const ProfilePage: React.FC = () => {
@@ -30,49 +61,54 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
-    const stored = localStorage.getItem('freelancerProfile');
-    if (stored) {
+    const loadProfile = async () => {
       try {
-        const parsed = JSON.parse(stored) as FreelancerProfileData;
-        setProfile(parsed);
-        setProfileComplete(parsed.profileComplete);
+        const routeProfile = (location.state as { profile?: FreelancerProfileData } | null)?.profile;
+        if (routeProfile) {
+          setProfile(routeProfile);
+          setProfileComplete(routeProfile.profileComplete);
+        }
+
+        const response = await api.get('/freelancer/profile', {
+          validateStatus: (status) => status === 200 || status === 404,
+        });
+
+        const backendProfile = toProfileData(response.data?.freelancer);
+        setProfile(backendProfile);
+        setProfileComplete(backendProfile.profileComplete);
+        localStorage.setItem('freelancerProfile', JSON.stringify(backendProfile));
       } catch (error) {
-        console.warn('Could not parse saved freelancer profile', error);
+        const stored = localStorage.getItem('freelancerProfile');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as FreelancerProfileData;
+            setProfile(parsed);
+            setProfileComplete(parsed.profileComplete);
+          } catch {
+            setProfile(defaultProfileValues);
+            setProfileComplete(false);
+          }
+        } else {
+          setProfile(defaultProfileValues);
+          setProfileComplete(false);
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
 
-    const routeProfile = (location.state as { profile?: FreelancerProfileData } | null)?.profile;
-    if (routeProfile) {
-      setProfile(routeProfile);
-      setProfileComplete(routeProfile.profileComplete);
-    }
-
-    setIsLoading(false);
+    loadProfile();
   }, [navigate, location.state]);
 
   const handleBack = () => {
     navigate('/freelancer/dashboard');
   };
 
-  const handleProfileSaved = async (updatedProfile: FreelancerProfileData) => {
-    try {
-      await api.put('/freelancer/profile', {
-        name: updatedProfile.name,
-        title: updatedProfile.title,
-        bio: updatedProfile.bio,
-        hourlyRate: updatedProfile.hourlyRate.replace(/[^\d]/g, ''),
-        location: updatedProfile.location,
-        skills: updatedProfile.skills.map(s => ({ name: s.name, proficiency: s.proficiency })),
-      });
-      setProfile(updatedProfile);
-      setProfileComplete(true);
-      localStorage.setItem('freelancerProfile', JSON.stringify({ ...updatedProfile, profileComplete: true }));
-      toast.success('Profile updated successfully!');
-      navigate('/freelancer/dashboard', { state: { profile: { ...updatedProfile, profileComplete: true } } });
-    } catch (error) {
-      console.error('Profile save error:', error);
-      toast.error('Failed to save profile. Please try again.');
-    }
+  const handleProfileSaved = (updatedProfile: FreelancerProfileData) => {
+    setProfile(updatedProfile);
+    setProfileComplete(updatedProfile.profileComplete);
+    localStorage.setItem('freelancerProfile', JSON.stringify(updatedProfile));
+    navigate('/freelancer/dashboard', { state: { profile: updatedProfile } });
   };
 
   if (isLoading) {

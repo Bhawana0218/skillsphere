@@ -84,16 +84,6 @@ function App() {
           }
         />
 
-        {/* <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-               <MainLayout>
-                <Dashboard />
-             </MainLayout>
-            </ProtectedRoute>
-          }
-        /> */}
 
         <Route path="/freelancer/proposals"
          element={

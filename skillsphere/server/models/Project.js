@@ -11,7 +11,8 @@ const projectSchema = new mongoose.Schema({
     enum: ['pending', 'in-progress', 'completed'], 
     default: 'pending' 
   },
-  category: { type: String, default: 'General' }
+  category: { type: String, default: 'General' },
+  applications: { type: Number, default: 0 }
 }, { timestamps: true });
 
 const Project = mongoose.model('Project', projectSchema);

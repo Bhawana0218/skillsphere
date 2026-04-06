@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
-import { getDashboard, updateProfile, getMyProposals } from '../controllers/freelancerController.js';
+import { getDashboard, getProfile, updateProfile, getMyProposals, getProgress, refreshDashboard } from '../controllers/freelancerController.js';
 
 const router = Router();
 
@@ -8,7 +8,9 @@ const router = Router();
 router.use(protect);
 
 router.route('/dashboard').get(getDashboard);
-router.route('/profile').put(updateProfile);
+router.route('/dashboard/refresh').put(refreshDashboard);
+router.route('/profile').get(getProfile).put(updateProfile);
+router.route('/progress').get(getProgress);
 router.get("/freelancer/my", protect, authorizeRoles("freelancer"), getMyProposals);
 
 export default router;

@@ -24,6 +24,7 @@ import analyticsRoutes from "./routes/analyticsRoutes.js";
 import clientProjects from './routes/clientProjects.js';
 import freelancerRoutes from './routes/freelancerRoutes.js';
 import testimonialRoutes from "./routes/testimonialRoutes.js";
+import faqRoutes from "./routes/faqRoutes.js";
 
 
 dotenv.config();
@@ -83,8 +84,10 @@ app.use("/api/disputes", disputeRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use('/api/client/projects', clientProjects);
+app.use("/api/projects", clientProjects);
 app.use('/api/freelancer', freelancerRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/faqs", faqRoutes);
 
 
 // Start server

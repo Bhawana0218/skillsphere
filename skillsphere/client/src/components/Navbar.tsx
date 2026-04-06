@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import { 
   User, 
   LogOut, 
@@ -69,19 +70,34 @@ const Navbar = () => {
 
   // Fetch navbar data efficiently
   useEffect(() => {
-    // let isMounted = true;
-
     const fetchData = async () => {
       if (!token || !currentUser?._id) {
+        setProposals([]);
         return;
       }
 
       try {
-        const res = await API.get(`/proposals/client/${currentUser._id}`);
+        const endpoint =
+          role === "client"
+            ? `/proposals/client/${currentUser._id}`
+            : role === "freelancer"
+            ? `/proposals/freelancer/${currentUser._id}`
+            : null;
+
+        if (!endpoint) {
+          setProposals([]);
+          return;
+        }
+
+        const res = await API.get(endpoint);
         setProposals(res.data || []);
-      } catch (err) {
-        console.error("Navbar fetch error:", err);
-        toast.error("Failed to load Data!");
+      } catch (err: unknown) {
+        const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+        if (status !== 401 && status !== 403) {
+          console.error("Navbar fetch error:", err);
+          toast.error("Failed to load data.");
+        }
+        setProposals([]);
       } 
     };
 
@@ -320,14 +336,14 @@ const Navbar = () => {
                   </p>
                 </div>
                 
-                <Link
-                  to="/client/profile"
-                  onClick={() => setUserDropdownOpen(false)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-slate-700/80 transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Profile
-                </Link>
+                 <Link
+          to={currentUser.role === "client" ? "/client/profile" : "/freelancer/profile"} // Dynamically change the profile link
+          onClick={() => setUserDropdownOpen(false)}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-slate-700/80 transition-colors"
+        >
+          <User className="w-4 h-4" />
+          Profile
+        </Link>
                 
                 <Link
                   to="/settings/security"

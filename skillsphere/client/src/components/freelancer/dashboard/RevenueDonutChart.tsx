@@ -37,7 +37,7 @@ const RevenueDonutChart: React.FC<RevenueDonutChartProps> = ({
       </div>
       
       <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
           <PieChart>
             <Pie
               data={data}

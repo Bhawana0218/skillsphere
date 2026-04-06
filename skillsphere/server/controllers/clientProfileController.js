@@ -58,11 +58,35 @@ export const createOrUpdateProfile = async (req, res) => {
 
 export const getMyProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ owner: req.user._id })
-      .populate("owner", "name email");
+    let profile = await Profile.findOne({ owner: req.user._id }).populate(
+      "owner",
+      "name email"
+    );
 
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      // Auto-create a starter profile for first-time clients to avoid repeated 404s.
+      const starterCompanyName = req.user?.name
+        ? `${req.user.name}'s Company`
+        : "My Company";
+
+      profile = await Profile.create({
+        owner: req.user._id,
+        companyName: starterCompanyName,
+        tagline: "",
+        description: "",
+        website: "",
+        industry: "",
+        companySize: "1-10",
+        location: "",
+        hiringPreferences: {
+          roles: [],
+          projectTypes: [],
+          budgetRange: "",
+        },
+        projects: [],
+      });
+
+      profile = await Profile.findById(profile._id).populate("owner", "name email");
     }
 
     res.json(profile);

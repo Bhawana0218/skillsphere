@@ -931,7 +931,7 @@ interface Project {
   _id: string; // MongoDB _id
   title: string;
   description: string;
-  budget: number; // Backend now uses Number
+  budget: number | string;
   duration: string;
   status: "Open" | "In Progress" | "Completed";
 }
@@ -952,18 +952,34 @@ interface ClientProfile {
   projects: Project[];
 }
 
+const DEFAULT_PROFILE: ClientProfile = {
+  companyName: "",
+  tagline: "",
+  description: "",
+  website: "",
+  industry: "",
+  companySize: "1-10",
+  location: "",
+  hiringPreferences: { roles: [], projectTypes: [], budgetRange: "" },
+  projects: [],
+};
+
+const normalizeProfile = (data: Partial<ClientProfile> | null | undefined): ClientProfile => ({
+  ...DEFAULT_PROFILE,
+  ...data,
+  hiringPreferences: {
+    ...DEFAULT_PROFILE.hiringPreferences,
+    ...(data?.hiringPreferences || {}),
+    roles: Array.isArray(data?.hiringPreferences?.roles) ? data.hiringPreferences.roles : [],
+    projectTypes: Array.isArray(data?.hiringPreferences?.projectTypes)
+      ? data.hiringPreferences.projectTypes
+      : [],
+  },
+  projects: Array.isArray(data?.projects) ? data.projects : [],
+});
+
 export default function ClientProfilePage() {
-  const [profile, setProfile] = useState<ClientProfile>({
-    companyName: "",
-    tagline: "",
-    description: "",
-    website: "",
-    industry: "",
-    companySize: "1-10",
-    location: "",
-    hiringPreferences: { roles: [], projectTypes: [], budgetRange: "" },
-    projects: [],
-  });
+  const [profile, setProfile] = useState<ClientProfile>(DEFAULT_PROFILE);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -976,8 +992,15 @@ export default function ClientProfilePage() {
   //  Fix: GET does not take profile as argument
   const fetchProfile = async () => {
     try {
-      const { data } = await API.get<ClientProfile>("/client/me"); // backend route: /client/me
-      setProfile(data);
+      const response = await API.get<ClientProfile>("/client/me", {
+        validateStatus: (status) => status === 200 || status === 404,
+      });
+
+      if (response.status === 404) {
+        setProfile(DEFAULT_PROFILE);
+      } else {
+        setProfile(normalizeProfile(response.data));
+      }
     } catch (error) {
       toast.error("Failed to load profile");
       console.error(error);

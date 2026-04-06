@@ -1,5 +1,6 @@
 // routes/clientProjects.js
 import express from "express";
+import mongoose from "mongoose";
 import Project from "../models/Project.js";
 
 const router = express.Router();
@@ -23,6 +24,34 @@ router.post("/", async (req, res) => {
     res.status(201).json(newProject);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// POST /api/client/projects/:id/apply or /api/projects/:id/apply
+router.post("/:id/apply", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid project ID" });
+    }
+
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Keep lightweight for now: increment an application counter and return success.
+    const currentApplications =
+      typeof project.applications === "number" ? project.applications : 0;
+    project.applications = currentApplications + 1;
+    await project.save();
+
+    res.json({
+      message: "Successfully applied to the project",
+      projectId: project._id,
+      applications: project.applications,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

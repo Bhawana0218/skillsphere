@@ -7,19 +7,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
 import type { FreelancerProfileData } from '../dashboard/FreelancerDashboard';
+import PortfolioUploader, { type PortfolioItem } from './PortfolioUploader';
 
 interface Skill {
   id: string;
   name: string;
   proficiency: number;
-}
-
-interface PortfolioItem {
-  id: string;
-  file: File | null;
-  preview: string;
-  title: string;
-  description: string;
 }
 
 interface ProfileFormData {
@@ -102,31 +95,8 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSa
   };
 
   // Handle portfolio
-  const addPortfolioItem = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    const newItems: PortfolioItem[] = files.map(file => ({
-      id: crypto.randomUUID(),
-      file,
-      preview: URL.createObjectURL(file),
-      title: '',
-      description: ''
-    }));
-    setFormData(prev => ({ ...prev, portfolio: [...prev.portfolio, ...newItems] }));
-  };
-
-  const updatePortfolioItem = (id: string, field: keyof PortfolioItem, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      portfolio: prev.portfolio.map(p => p.id === id ? { ...p, [field]: value } : p)
-    }));
-  };
-
-  const removePortfolioItem = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      portfolio: prev.portfolio.filter(p => p.id !== id)
-    }));
+  const handlePortfolioChange = (items: PortfolioItem[]) => {
+    setFormData(prev => ({ ...prev, portfolio: items }));
   };
 
   // Handle resume
@@ -142,30 +112,55 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSa
 
   // Submit to API
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.name.trim() || !formData.title.trim() || !formData.bio.trim()) {
+      toast.error('Name, title, and bio are required');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Prepare payload (exclude File objects for JSON)
+      // Prepare payload - ensure skills have proficiency
+      const validSkills = formData.skills.filter(s => s.name.trim()).map(s => ({
+        name: s.name.trim(),
+        proficiency: Math.max(0, Math.min(100, parseInt(String(s.proficiency)) || 50))
+      }));
+
+      // Prepare portfolio - only include necessary fields
+      const validPortfolio = formData.portfolio.filter(p => p.title.trim()).map(p => ({
+        title: p.title.trim(),
+        description: p.description.trim(),
+        imageUrl: p.preview, // Keep as is for now (DataURL)
+        projectUrl: p.projectUrl?.trim() || ''
+      }));
+
       const payload = {
-        ...formData,
-        skills: formData.skills.filter(s => s.name.trim()),
-        portfolio: formData.portfolio.map(p => ({
-          title: p.title,
-          description: p.description,
-          // In real app: upload files and send URLs
-          imageUrl: p.preview // demo only
-        }))
+        name: formData.name.trim(),
+        title: formData.title.trim(),
+        bio: formData.bio.trim(),
+        hourlyRate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : 0,
+        location: formData.location.trim(),
+        skills: validSkills,
+        portfolio: validPortfolio,
+        availability: formData.availability
       };
 
       await api.put('/freelancer/profile', payload);
       toast.success('🎉 Profile updated successfully!');
       onSave?.({
-        name: formData.name,
-        title: formData.title,
+        name: formData.name.trim(),
+        title: formData.title.trim(),
         hourlyRate: formData.hourlyRate,
-        location: formData.location,
-        skills: formData.skills,
-        bio: formData.bio,
-        profileComplete: true,
+        location: formData.location.trim(),
+        skills: validSkills,
+        bio: formData.bio.trim(),
+        profileComplete: Boolean(
+          formData.name.trim() &&
+            formData.title.trim() &&
+            formData.bio.trim() &&
+            String(formData.hourlyRate).trim() &&
+            validSkills.length > 0
+        ),
       });
     } catch (error) {
       console.error('Profile save error:', error);
@@ -437,56 +432,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSa
                     <p className="text-slate-500 text-base">Upload your best work to impress clients</p>
                   </div>
 
-                  {/* Portfolio Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <AnimatePresence>
-                      {formData.portfolio.map((item) => (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className="relative group bg-slate-50 rounded-2xl overflow-hidden border border-slate-200"
-                        >
-                          <img 
-                            src={item.preview} 
-                            alt={item.title || 'Portfolio'} 
-                            className="w-full h-40 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                            <input
-                              type="text"
-                              placeholder="Project title"
-                              value={item.title}
-                              onChange={(e) => updatePortfolioItem(item.id, 'title', e.target.value)}
-                              className="px-3 py-2 rounded-lg bg-white/90 text-slate-900 font-semibold mb-2"
-                            />
-                            <textarea
-                              placeholder="Brief description"
-                              value={item.description}
-                              onChange={(e) => updatePortfolioItem(item.id, 'description', e.target.value)}
-                              className="px-3 py-2 rounded-lg bg-white/90 text-slate-700 text-sm resize-none"
-                              rows={2}
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removePortfolioItem(item.id)}
-                            className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors shadow-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                    
-                    {/* Add Portfolio Button */}
-                    <label className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-cyan-400 hover:bg-cyan-50/30 transition-colors">
-                      <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                      <span className="text-slate-600 font-medium">Add Project</span>
-                      <input type="file" accept="image/*" multiple onChange={addPortfolioItem} className="hidden" />
-                    </label>
-                  </div>
+                  <PortfolioUploader
+                    items={formData.portfolio}
+                    onChange={handlePortfolioChange}
+                  />
 
                   {/* Resume Upload */}
                   <div className="pt-6 border-t border-slate-100">
