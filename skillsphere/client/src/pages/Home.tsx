@@ -7,6 +7,7 @@ import {
   Bell, ArrowRight, Globe, Lock, TrendingUp,
   AlertCircle
 } from 'lucide-react';
+import api from '../services/api';
 
 // --- Types ---
 interface Project {
@@ -54,147 +55,9 @@ interface Notification {
 }
 
 // --- Mock Data ---
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: 1,
-    title: "React Native App for Local Delivery",
-    category: "Mobile Development",
-    budget: "$1,200 - $2,500",
-    budgetRange: { min: 1200, max: 2500 },
-    location: "New York, NY",
-    coordinates: { lat: 40.7128, lng: -74.0060 },
-    postedAt: "2 hours ago",
-    postedTimestamp: Date.now() - 2 * 60 * 60 * 1000,
-    tags: ["React Native", "Firebase", "Maps API"],
-    description: "Build a cross-platform delivery app with real-time tracking, payment integration, and push notifications. Must have experience with geolocation services.",
-    client: { name: "TechStart Inc", avatar: "🚀", rating: 4.9, verified: true },
-    applications: 12,
-    featured: true
-  },
-  {
-    id: 2,
-    title: "AI-Powered Logo Design for Startup",
-    category: "Graphic Design",
-    budget: "$300 - $500",
-    budgetRange: { min: 300, max: 500 },
-    location: "Remote / Local",
-    postedAt: "5 hours ago",
-    postedTimestamp: Date.now() - 5 * 60 * 60 * 1000,
-    tags: ["Illustrator", "AI Art", "Branding"],
-    description: "Create a modern, memorable logo using AI tools combined with human creativity. Deliverables include vector files, brand guidelines, and social media kits.",
-    client: { name: "Nova Labs", avatar: "✨", rating: 4.7, verified: true },
-    applications: 28
-  },
-  {
-    id: 3,
-    title: "Full Stack MERN E-commerce Platform",
-    category: "Web Development",
-    budget: "$3,000+",
-    budgetRange: { min: 3000, max: 8000 },
-    location: "Austin, TX",
-    coordinates: { lat: 30.2672, lng: -97.7431 },
-    postedAt: "1 day ago",
-    postedTimestamp: Date.now() - 24 * 60 * 60 * 1000,
-    tags: ["MERN", "Stripe", "Tailwind"],
-    description: "End-to-end e-commerce solution with product management, cart functionality, payment processing, admin dashboard, and analytics. Scalable architecture required.",
-    client: { name: "ShopFlow", avatar: "🛒", rating: 5.0, verified: true },
-    applications: 45,
-    featured: true
-  },
-  {
-    id: 4,
-    title: "SEO Optimization for Dental Clinic",
-    category: "Digital Marketing",
-    budget: "$500 - $800",
-    budgetRange: { min: 500, max: 800 },
-    location: "Chicago, IL",
-    coordinates: { lat: 41.8781, lng: -87.6298 },
-    postedAt: "2 days ago",
-    postedTimestamp: Date.now() - 2 * 24 * 60 * 60 * 1000,
-    tags: ["SEO", "Local SEO", "Google Ads"],
-    description: "Improve local search visibility, optimize Google Business Profile, create content strategy, and implement technical SEO fixes for a growing dental practice.",
-    client: { name: "SmileCare Dental", avatar: "🦷", rating: 4.8, verified: false },
-    applications: 19
-  },
-  {
-    id: 5,
-    title: "Flutter Fitness Tracker App",
-    category: "Mobile Development",
-    budget: "$2,000 - $4,000",
-    budgetRange: { min: 2000, max: 4000 },
-    location: "Remote",
-    postedAt: "3 hours ago",
-    postedTimestamp: Date.now() - 3 * 60 * 60 * 1000,
-    tags: ["Flutter", "HealthKit", "Firebase"],
-    description: "Develop a comprehensive fitness app with workout tracking, nutrition logging, progress analytics, and social features. Integration with wearables preferred.",
-    client: { name: "FitLife Co", avatar: "💪", rating: 4.6, verified: true },
-    applications: 31
-  },
-  {
-    id: 6,
-    title: "3D Product Visualization for E-commerce",
-    category: "3D Design",
-    budget: "$800 - $1,500",
-    budgetRange: { min: 800, max: 1500 },
-    location: "Los Angeles, CA",
-    coordinates: { lat: 34.0522, lng: -118.2437 },
-    postedAt: "6 hours ago",
-    postedTimestamp: Date.now() - 6 * 60 * 60 * 1000,
-    tags: ["Blender", "Three.js", "WebGL"],
-    description: "Create interactive 3D models of products for an online store. Models should be optimized for web, support AR preview, and integrate with Shopify.",
-    client: { name: "VisualCart", avatar: "🎨", rating: 4.9, verified: true },
-    applications: 22
-  }
-];
+const TESTIMONIALS: Testimonial[] = [];
 
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: 1,
-    name: "Sarah Chen",
-    role: "CTO",
-    company: "TechStart Inc",
-    avatar: "👩‍💻",
-    content: "SkillSphere transformed how we hire. Found our lead developer in 48 hours with perfect skill match. The escrow system gave us complete peace of mind.",
-    rating: 5
-  },
-  {
-    id: 2,
-    name: "Marcus Johnson",
-    role: "Freelance Designer",
-    company: "Independent",
-    avatar: "🎨",
-    content: "As a freelancer, SkillSphere's AI matching brings me high-quality projects that actually fit my expertise. Payments are always on time, and the community is supportive.",
-    rating: 5
-  },
-  {
-    id: 3,
-    name: "Elena Rodriguez",
-    role: "Marketing Director",
-    company: "GrowthLabs",
-    avatar: "📈",
-    content: "The hyperlocal feature is a game-changer. We found a local SEO expert who visited our office and delivered results 3x faster than remote contractors.",
-    rating: 5
-  }
-];
-
-const FAQS: FAQ[] = [
-  {
-    question: "How does SkillSphere's AI matching work?",
-    answer: "Our HuggingFace-powered engine analyzes project requirements, freelancer skills, past performance, location preferences, and communication style to create compatibility scores. The system continuously learns from successful matches to improve recommendations."
-  },
-  {
-    question: "Are payments really secure?",
-    answer: "Yes! All payments are held in encrypted escrow accounts. Funds are only released when you approve completed milestones. We partner with Stripe and Razorpay for PCI-DSS compliant processing, and offer dispute resolution with human mediation."
-  },
-  {
-    question: "Can I work with freelancers outside my city?",
-    answer: "Absolutely! While we specialize in hyperlocal connections for in-person collaboration, you can filter for remote talent globally. Our real-time collaboration tools make distance irrelevant."
-  },
-  {
-    question: "What's the fee structure?",
-    answer: "Clients pay a 5% service fee on completed projects. Freelancers enjoy 0% fees for their first $500 earned, then a competitive 8% thereafter. No hidden charges, no subscription required."
-  }
-];
+const FAQS: FAQ[] = [];
 
 const CATEGORIES = ["All", "Web Development", "Mobile Development", "Graphic Design", "Digital Marketing", "3D Design", "Writing & Translation", "Data Science"];
 
@@ -292,12 +155,25 @@ const SkillSphereHome: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+ 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState<"newest" | "budget-high" | "budget-low" | "applications">("newest");
+ 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+ 
   const [isPostProjectModalOpen, setIsPostProjectModalOpen] = useState(false);
+  
+  const [postProjectData, setPostProjectData] = useState({
+    title: '',
+    category: CATEGORIES[1] || 'Web Development',
+    budgetRange: '300-500',
+    locationPreference: 'Either',
+    duration: '1 month',
+    description: '',
+  });
+
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [isPlayingTestimonial] = useState(true);
@@ -305,13 +181,44 @@ const SkillSphereHome: React.FC = () => {
 
   // Notification system
   const addNotification = useCallback((type: Notification['type'], message: string, duration?: number) => {
-    const id = Math.random().toString(36).substr(2, 9);
-    setNotifications(prev => [...prev, { id, type, message, duration }]);
-  }, []);
+  const id = Math.random().toString(36).slice(2);
+  setNotifications(prev => [...prev, { id, type, message, duration }]);
+}, []);
 
   const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
+
+  const handlePostProjectField = (field: keyof typeof postProjectData) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setPostProjectData(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const mapBackendJobs = (jobs: any[]): Project[] =>
+    jobs.map((job) => ({
+      id: job._id || job.id || Math.random().toString(36).slice(2),
+      title: job.title || 'New Project',
+      category: job.skillsRequired?.[0] || 'Web Development',
+      budget: typeof job.budget === 'number' ? `₹${job.budget.toLocaleString()}` : job.budget || '$500',
+      budgetRange: {
+        min: typeof job.budget === 'number' ? job.budget : 0,
+        max: typeof job.budget === 'number' ? job.budget : 0,
+      },
+      location: job.location || 'Remote',
+      coordinates: job.coordinates,
+      postedAt: job.createdAt ? new Date(job.createdAt).toLocaleString() : 'Just now',
+      postedTimestamp: job.createdAt ? new Date(job.createdAt).getTime() : Date.now(),
+      tags: job.skillsRequired || [],
+      description: job.description || '',
+      client: {
+        name: job.client?.name || 'Verified Client',
+        avatar: job.client?.avatar || '💼',
+        rating: job.client?.rating || 4.7,
+        verified: job.client?.verified ?? true,
+      },
+      applications: job.proposalCount || 0,
+    }));
 
   // 🔧 FIXED: Load projects with proper state management
   useEffect(() => {
@@ -320,18 +227,19 @@ const SkillSphereHome: React.FC = () => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        
+        const { data } = await api.get('/jobs');
         if (isMounted) {
-          setProjects(MOCK_PROJECTS);
-          setFilteredProjects(MOCK_PROJECTS); // Set initial filtered state
+          const normalized = mapBackendJobs(Array.isArray(data) ? data : []);
+          setProjects(normalized.length ? normalized : []);
+          setFilteredProjects(normalized.length ? normalized : []);
           setLoading(false);
         }
       } catch (error) {
-        console.error("Failed to fetch projects:", error);
+        console.error('Failed to fetch projects:', error);
         if (isMounted) {
-          addNotification("error", "Failed to load projects. Please try again.");
+          addNotification('error', 'Failed to load projects. Please try again.');
+          setProjects([]);
+          setFilteredProjects([]);
           setLoading(false);
         }
       }
@@ -387,14 +295,18 @@ const SkillSphereHome: React.FC = () => {
     setFilteredProjects(sorted);
   }, [projects, searchQuery, selectedCategory, sortBy]);
 
+
   // Auto-rotate testimonials
   useEffect(() => {
-    if (!isPlayingTestimonial) return;
-    const interval = setInterval(() => {
-      setActiveTestimonial(prev => (prev + 1) % TESTIMONIALS.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isPlayingTestimonial]);
+  if (!isPlayingTestimonial || TESTIMONIALS.length === 0) return;
+
+  const interval = setInterval(() => {
+    setActiveTestimonial(prev => (prev + 1) % TESTIMONIALS.length);
+  }, 6000);
+
+  return () => clearInterval(interval);
+}, [isPlayingTestimonial]);
+
 
   // Handlers
   const handleApply = (project: Project) => {
@@ -403,7 +315,32 @@ const SkillSphereHome: React.FC = () => {
   };
 
   const handleSaveProject = (project: Project) => {
-    addNotification("info", `Saved "${project.title}" to favorites`);
+    addNotification('info', `Saved "${project.title}" to favorites`);
+  };
+
+  const handleSearchProjects = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.append('keyword', searchQuery.trim());
+      if (selectedCategory !== 'All') params.append('skills', selectedCategory);
+      const backendSort = sortBy === 'budget-high'
+        ? 'budget-desc'
+        : sortBy === 'budget-low'
+          ? 'budget-asc'
+          : 'newest';
+      params.append('sortBy', backendSort);
+
+      const { data } = await api.get(`/jobs/search?${params.toString()}`);
+      const normalized = mapBackendJobs(Array.isArray(data) ? data : []);
+      setProjects(normalized.length ? normalized : []);
+      setFilteredProjects(normalized.length ? normalized : []);
+    } catch (error) {
+      console.error('Search failed:', error);
+      addNotification('error', 'Search failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleFaq = (index: number) => {
@@ -417,6 +354,11 @@ const SkillSphereHome: React.FC = () => {
     { label: "Client Satisfaction", value: 98, suffix: "%" },
     { label: "Cities Covered", value: 250, suffix: "+" }
   ], []);
+
+  const currentTestimonial =
+  TESTIMONIALS.length > 0
+    ? TESTIMONIALS[activeTestimonial]
+    : null;
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">
@@ -530,7 +472,11 @@ const SkillSphereHome: React.FC = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="flex-1 px-4 py-4 bg-transparent text-slate-800 placeholder-slate-400 focus:outline-none"
                   />
-                  <button className="m-2 px-6 py-2.5 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-xl font-medium transition-all shadow-md">
+                  <button
+                    type="button"
+                    onClick={handleSearchProjects}
+                    className="m-2 px-6 py-2.5 bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-xl font-medium transition-all shadow-md"
+                  >
                     Search
                   </button>
                 </div>
@@ -906,27 +852,42 @@ const SkillSphereHome: React.FC = () => {
                 className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-slate-200/50"
               >
                 <div className="flex items-center gap-1 mb-6">
-                  {[...Array(5)].map((_, i) => (
+        
+                  {/* TESTIMONIALS[activeTestimonial]; */}
+
+{[...Array(5)].map((_, i) => (
+  <Star 
+    key={i} 
+    className={`w-5 h-5 ${
+      i < (currentTestimonial?.rating ??  0)
+        ? "text-amber-400 fill-amber-400"
+        : "text-slate-300"
+    }`} 
+  />
+))}
+                  {/* {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className={`w-5 h-5 ${i < TESTIMONIALS[activeTestimonial].rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}`} 
+                      className={`w-5 h-5 ${i < TESTIMONIALS[activeTestimonial]?.rating ?? 0 ? "text-amber-400 fill-amber-400" : "text-slate-300"}`} 
                     />
-                  ))}
+                  ))} */}
                 </div>
                 
                 <blockquote className="text-xl md:text-2xl font-medium text-slate-800 mb-8 leading-relaxed">
-                  "{TESTIMONIALS[activeTestimonial].content}"
+                  "{currentTestimonial?.content || 'No testimonials available yet.'}"
                 </blockquote>
                 
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-cyan-100 to-blue-100 flex items-center justify-center text-2xl">
-                    {TESTIMONIALS[activeTestimonial].avatar}
+                    {currentTestimonial?.avatar || "👤"}
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900">{TESTIMONIALS[activeTestimonial].name}</div>
+                    <div className="font-bold text-slate-900">{currentTestimonial?.name || "Anonymous"}</div>
                     <div className="text-slate-600">
-                      {TESTIMONIALS[activeTestimonial].role} at {TESTIMONIALS[activeTestimonial].company}
-                    </div>
+  {currentTestimonial
+    ? `${currentTestimonial.role} at ${currentTestimonial.company}`
+    : "No role information"}
+</div>
                   </div>
                 </div>
               </motion.div>
@@ -957,7 +918,10 @@ const SkillSphereHome: React.FC = () => {
               </div>
               
               <button
-                onClick={() => setActiveTestimonial(prev => prev === TESTIMONIALS.length - 1 ? 0 : prev + 1)}
+                onClick={() => {
+  if (TESTIMONIALS.length === 0) return;
+  setActiveTestimonial(prev => prev === TESTIMONIALS.length - 1 ? 0 : prev + 1);
+}}
                 className="p-3 rounded-full bg-white border border-slate-200 hover:border-cyan-400 transition-colors shadow-sm"
                 aria-label="Next testimonial"
               >
@@ -1252,6 +1216,8 @@ const SkillSphereHome: React.FC = () => {
                   <input
                     type="text"
                     placeholder="e.g., React Native App for Local Delivery"
+                    value={postProjectData.title}
+                    onChange={handlePostProjectField('title')}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900"
                   />
                 </div>
@@ -1259,7 +1225,11 @@ const SkillSphereHome: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Category *</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900">
+                    <select
+                      value={postProjectData.category}
+                      onChange={handlePostProjectField('category')}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900"
+                    >
                       {CATEGORIES.filter(c => c !== "All").map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
@@ -1267,7 +1237,11 @@ const SkillSphereHome: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Budget *</label>
-                    <select className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900">
+                    <select
+                      value={postProjectData.budgetRange}
+                      onChange={handlePostProjectField('budgetRange')}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900"
+                    >
                       <option value="300-500">$300 - $500</option>
                       <option value="500-1000">$500 - $1,000</option>
                       <option value="1000-2500">$1,000 - $2,500</option>
@@ -1281,7 +1255,7 @@ const SkillSphereHome: React.FC = () => {
                   <div className="flex gap-3">
                     {["Remote", "Local", "Either"].map((loc) => (
                       <label key={loc} className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="location" className="text-cyan-600 focus:ring-cyan-500" defaultChecked={loc === "Either"} />
+                        <input type="radio" name="location" className="text-cyan-600 focus:ring-cyan-500" checked={postProjectData.locationPreference === loc} onChange={() => setPostProjectData(prev => ({ ...prev, locationPreference: loc }))} />
                         <span className="text-sm text-slate-700">{loc}</span>
                       </label>
                     ))}
@@ -1289,13 +1263,29 @@ const SkillSphereHome: React.FC = () => {
                 </div>
                 
                 <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Duration *</label>
+                  <select
+                    value={postProjectData.duration}
+                    onChange={handlePostProjectField('duration')}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 text-slate-900"
+                  >
+                    <option value="1 month">1 month</option>
+                    <option value="2 weeks">2 weeks</option>
+                    <option value="3 months">3 months</option>
+                  </select>
+                </div>
+                
+                <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Description *</label>
                   <textarea
                     rows={4}
                     placeholder="Describe your project, goals, and requirements..."
+                    value={postProjectData.description}
+                    onChange={handlePostProjectField('description')}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-slate-900 resize-none"
                   ></textarea>
                 </div>
+
                 
                 <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl">
                   <ShieldCheck className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
@@ -1333,3 +1323,9 @@ const SkillSphereHome: React.FC = () => {
 };
 
 export default SkillSphereHome;
+
+
+
+
+
+

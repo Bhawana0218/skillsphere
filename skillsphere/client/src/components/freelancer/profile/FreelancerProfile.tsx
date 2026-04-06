@@ -39,10 +39,11 @@ interface ProfileFormData {
 interface FreelancerProfileProps {
   initialData?: FreelancerProfileData;
   onSave?: (profile: FreelancerProfileData) => void;
+  embedded?: boolean;
 }
 
 
-const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSave }) => {
+const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSave, embedded = false }) => {
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -182,8 +183,8 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({ initialData, onSa
   ];
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-cyan-50/20 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className={`${embedded ? '' : 'min-h-screen bg-linear-to-br from-slate-50 via-white to-cyan-50/20 py-8 px-4'}`}>
+      <div className={`${embedded ? '' : 'max-w-4xl mx-auto'}`}>
         
         {/* Header */}
         <motion.div 

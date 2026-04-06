@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import FreelancerProfile from '../../components/freelancer/profile/FreelancerProfile';
 import { checkAuth } from '../../utils/auth';
 import toast from 'react-hot-toast';
+import api from '../../services/api';
 import type { FreelancerProfileData } from '../../components/freelancer/dashboard/FreelancerDashboard';
 
 const defaultProfileValues: FreelancerProfileData = {
@@ -53,12 +54,25 @@ const ProfilePage: React.FC = () => {
     navigate('/freelancer/dashboard');
   };
 
-  const handleProfileSaved = (updatedProfile: FreelancerProfileData) => {
-    setProfile(updatedProfile);
-    setProfileComplete(true);
-    localStorage.setItem('freelancerProfile', JSON.stringify({ ...updatedProfile, profileComplete: true }));
-    toast.success('Profile updated successfully!');
-    navigate('/freelancer/dashboard', { state: { profile: { ...updatedProfile, profileComplete: true } } });
+  const handleProfileSaved = async (updatedProfile: FreelancerProfileData) => {
+    try {
+      await api.put('/freelancer/profile', {
+        name: updatedProfile.name,
+        title: updatedProfile.title,
+        bio: updatedProfile.bio,
+        hourlyRate: updatedProfile.hourlyRate.replace(/[^\d]/g, ''),
+        location: updatedProfile.location,
+        skills: updatedProfile.skills.map(s => ({ name: s.name, proficiency: s.proficiency })),
+      });
+      setProfile(updatedProfile);
+      setProfileComplete(true);
+      localStorage.setItem('freelancerProfile', JSON.stringify({ ...updatedProfile, profileComplete: true }));
+      toast.success('Profile updated successfully!');
+      navigate('/freelancer/dashboard', { state: { profile: { ...updatedProfile, profileComplete: true } } });
+    } catch (error) {
+      console.error('Profile save error:', error);
+      toast.error('Failed to save profile. Please try again.');
+    }
   };
 
   if (isLoading) {

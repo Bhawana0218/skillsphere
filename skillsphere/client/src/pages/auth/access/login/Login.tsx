@@ -58,7 +58,7 @@ function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
       toast.success("Signed in with Google.");
-      navigate("/dashboard");
+      navigate("/home");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Google sign-in failed.");
     } finally {

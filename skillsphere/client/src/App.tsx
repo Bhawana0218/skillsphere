@@ -14,7 +14,6 @@ import ForgotPassword from "./pages/auth/password/forgetPassword/ForgotPassword"
 import ResetPassword from "./pages/auth/password/forgetPassword/resetPassword/ResetPassword";
 import TwoFactorSetup from "./pages/auth/twoFactorSetup/TwoFactorSetup";
 import VerifyRequired from "./pages/auth/emailVerification/VerifyRequired";
-import Dashboard from "./pages/dashboard/Dashboard";
 import Jobs from "./pages/jobs/job/Jobs";
 import CreateJob from "./pages/jobs/createNewJob/CreateJob";
 import JobDetails from "./pages/jobs/job/jobDetail/JobDetails";
@@ -85,7 +84,7 @@ function App() {
           }
         />
 
-        <Route
+        {/* <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
@@ -94,7 +93,7 @@ function App() {
              </MainLayout>
             </ProtectedRoute>
           }
-        />
+        /> */}
 
         <Route path="/freelancer/proposals"
          element={

@@ -2,38 +2,75 @@
 import mongoose from 'mongoose';
 
 import Freelancer from '../models/Freelancer.js';
+import Proposal from "../models/Proposal.js";
 
 // @desc    Get freelancer dashboard data
 // @route   GET /api/freelancer/dashboard
 const getDashboard = async (req, res) => {
   try {
-    const freelancer = await Freelancer.findOne({ userId: req.user?.id });
-    
+    const userId = req.user.id;
+
+    const freelancer = await Freelancer.findOne({ userId });
     if (!freelancer) {
-      return res.status(404).json({ message: 'Freelancer profile not found' });
+      return res.status(404).json({ message: "Freelancer not found" });
     }
 
-    // Update last active
-    freelancer.lastActive = new Date();
-    await freelancer.save();
+    /* ================= PROPOSALS ================= */
+    const proposals = await Proposal.find({ freelancer: userId });
+
+    const totalProposals = proposals.length;
+    const pendingProposals = proposals.filter(p => p.status === "pending").length;
+    const acceptedProposals = proposals.filter(p => p.status === "accepted").length;
+
+    /* ================= JOBS ================= */
+    const jobsWon = await Proposal.find({
+      freelancer: userId,
+      status: "accepted"
+    }).populate("job");
+
+    const completedJobs = freelancer.stats.completedJobs || 0;
+    const activeContracts = jobsWon.length;
+
+    /* ================= EARNINGS ================= */
+    const totalEarnings = freelancer.stats.earnings;
+
+    /* ================= MONTHLY EARNINGS ================= */
+    const monthlyEarnings = await getMonthlyEarnings(userId);
+
+    /* ================= ACTIVITY ================= */
+    const activity = proposals.slice(0, 5).map((p, i) => ({
+      id: i + 1,
+      title: `Proposal for ${p.job?.title || "Job"}`,
+      status: p.status,
+      date: p.createdAt,
+      type: "proposal"
+    }));
+
+    /* ================= SKILL DISTRIBUTION ================= */
+    const skillDistribution = freelancer.skills.map(skill => ({
+      name: skill.name,
+      value: skill.proficiency
+    }));
 
     res.json({
-      earnings: freelancer.stats.earnings,
-      completedJobs: freelancer.stats.completedJobs,
-      rating: freelancer.stats.rating,
-      activeProposals: freelancer.stats.activeProposals,
-      completionRate: freelancer.stats.completionRate,
-      responseTime: freelancer.stats.responseTime,
-      revenueDistribution: freelancer.revenueDistribution.map(r => ({
-        name: r.category,
-        value: r.percentage,
-        color: getCategoryColor(r.category)
-      })),
-      monthlyEarnings: await getMonthlyEarnings(freelancer.userId)
+      analytics: {
+        totalProposals,
+        pendingProposals,
+        totalEarnings,
+        avgRating: freelancer.stats.rating,
+        totalReviews: freelancer.stats.completedJobs,
+        completedJobs,
+        activeContracts
+      },
+      monthlyEarnings,
+      activity,
+      skillDistribution,
+      profile: freelancer
     });
+
   } catch (error) {
-    console.error('Dashboard error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Dashboard Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -126,15 +163,25 @@ const calculateProfileCompletion = (f) => {
 
 // Helper: Mock monthly earnings (replace with real aggregation)
 const getMonthlyEarnings = async (userId) => {
-  // In production: aggregate from Project/Payment models
-  return [
-    { month: 'Jan', amount: 40000 },
-    { month: 'Feb', amount: 30000 },
-    { month: 'Mar', amount: 55000 },
-    { month: 'Apr', amount: 48000 },
-    { month: 'May', amount: 60000 },
-    { month: 'Jun', amount: 75000 },
-  ];
+  const payments = await Payment.aggregate([
+    { $match: { freelancer: new mongoose.Types.ObjectId(userId) } },
+    {
+      $group: {
+        _id: { $month: "$createdAt" },
+        total: { $sum: "$amount" }
+      }
+    }
+  ]);
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+
+  return months.map((m, i) => {
+    const found = payments.find(p => p._id === i + 1);
+    return {
+      name: m,
+      amount: found ? found.total : 0
+    };
+  });
 };
 
 export const getMyProposals = async (req, res) => {
@@ -154,3 +201,12 @@ export { getDashboard, updateProfile, getCategoryColor, calculateProfileCompleti
 //   getDashboard,
 //   updateProfile
 // };
+
+
+
+
+
+
+
+
+import Job from "../models/Job.js";

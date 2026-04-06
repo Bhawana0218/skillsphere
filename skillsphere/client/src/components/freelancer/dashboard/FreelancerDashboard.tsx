@@ -66,7 +66,11 @@ const FreelancerDashboard: React.FC<FreelancerDashboardProps> = ({ onBack, onEdi
 
   // (optional) place for loading state
   if (loading) {
-    // intentionally minimal fallback while data loads
+    return (
+      <div className="min-h-[360px] flex items-center justify-center bg-white rounded-3xl border border-slate-200/60 shadow-lg shadow-slate-200/40">
+        <div className="animate-spin w-12 h-12 border-4 border-cyan-200 border-t-cyan-600 rounded-full" />
+      </div>
+    );
   }
 
   // Fetch Dashboard Data

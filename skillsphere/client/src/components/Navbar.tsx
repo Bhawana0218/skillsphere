@@ -10,6 +10,9 @@ import {
   Users,
   Home,
   FileText,
+  LayoutDashboard,
+  Briefcase,
+  MessageSquare
 } from "lucide-react";
 import API from "../services/api";
 import toast from "react-hot-toast";
@@ -157,7 +160,7 @@ const Navbar = () => {
   return (
     <nav 
       ref={navbarRef}
-      className="bg-[#00072D] text-gray-300 font-medium px-4 lg:px-6 rounded-xl m-4 flex justify-between items-center shadow-lg fixed top-0 w-full z-50 border-b border-slate-700/50"
+      className="bg-[#00072D] text-gray-300 font-medium px-4 lg:px-6 rounded-xl mt-4 mx-4 flex justify-between items-center shadow-lg fixed top-0 left-0 right-0 z-50 border-b border-slate-700/50"
     >
       {/* Logo Section */}
       <div className="flex items-center shrink-0">
@@ -192,7 +195,7 @@ const Navbar = () => {
         {/* Freelancer Routes */}
         {role === "freelancer" && (
           <>
-            <NavLink to="/freelancer/dashboard">Dashboard</NavLink>
+            <NavLink to="/freelancer/dashboard"><LayoutDashboard className="w-4 h-4"/>Dashboard</NavLink>
             <NavLink to="/jobs">Browse Jobs</NavLink>
             <NavLink to="/freelancer/proposals">
               My Proposals
@@ -208,7 +211,7 @@ const Navbar = () => {
               <Users className="w-4 h-4" />
                  Freelancers
             </NavLink>
-            <NavLink to="/client/dashboard">Dashboard</NavLink>
+            <NavLink to="/client/dashboard"><LayoutDashboard className="w-4 h-4"/>Dashboard</NavLink>
             <NavLink to="/jobs">My Jobs</NavLink>
 
             {/* Proposals Dropdown */}
@@ -392,9 +395,16 @@ const Navbar = () => {
             {/* Freelancer Routes */}
             {role === "freelancer" && (
               <>
-                <NavLink to="/freelancer/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>Dashboard</NavLink>
-                <NavLink to="/jobs" mobile onClick={() => setMobileMenuOpen(false)}>Browse Jobs</NavLink>
+                <NavLink to="/freelancer/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </NavLink>
+                <NavLink to="/jobs" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <Briefcase className="w-4 h-4" />
+                  Browse Jobs
+                </NavLink>
                 <NavLink to="/freelancer/proposals" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <MessageSquare className="w-4 h-4" />
                   My Proposals
                   {proposals.length > 0 && <CountBadge count={proposals.length} />}
                 </NavLink>
@@ -409,7 +419,9 @@ const Navbar = () => {
                  <Users className="w-4 h-4" />
                        Freelancers
               </NavLink>
-                <NavLink to="/client/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>Dashboard</NavLink>
+               
+                <NavLink to="/client/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>
+                <LayoutDashboard className="w-4 h-4"/>Dashboard</NavLink>
                 <NavLink to="/jobs" mobile onClick={() => setMobileMenuOpen(false)}>My Jobs</NavLink>
 
                 {/* Mobile Proposals List */}
