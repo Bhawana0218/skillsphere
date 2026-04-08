@@ -104,6 +104,40 @@ const FreelancerProposals = () => {
     fetchProposals();
   }, [fetchProposals]);
 
+// const fetchProposals = useCallback(async () => {
+//   if (!user?._id) {
+//     setError("User not found. Please login again.");
+//     setLoading(false);
+//     return;
+//   }
+
+//   setLoading(true);
+//   setError(null);
+
+//   try {
+//     const res = await API.get(`/proposals/freelancer/${user._id}`);
+
+//     console.log("API RESPONSE:", res.data);
+
+//     const proposalsData =
+//       res.data?.data || res.data?.proposals || res.data || [];
+
+//     setProposals(proposalsData);
+//   } catch (err: any) {
+//     console.error("FETCH ERROR:", err);
+
+//     const msg =
+//       err?.response?.data?.message ||
+//       err?.message ||
+//       "Failed to load proposals";
+
+//     setError(msg);
+//     addToast(msg, "error");
+//   } finally {
+//     setLoading(false);
+//   }
+// }, [user, addToast]);
+
   // Filter logic
   const filteredProposals = useMemo(() => {
     return proposals.filter((p) => {

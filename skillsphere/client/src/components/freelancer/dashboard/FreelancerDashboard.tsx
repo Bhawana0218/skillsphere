@@ -17,7 +17,7 @@ const FreelancerDashboard: React.FC<FreelancerDashboardProps> = ({
     <div key={refreshKey} className="space-y-6">
       {/* Dashboard content using profileData from centralized types */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-linear-to-br from-blue-50 to-cyan-50 rounded-lg p-6 border border-blue-200">
+        <div className="bg-linear-to-r from-cyan-50 to-purple-50 rounded-lg p-6 border border-blue-200">
           <div className="flex items-center gap-3 mb-2">
             <Target size={20} className="text-blue-600" />
             <h3 className="font-semibold text-slate-900">Profile Status</h3>

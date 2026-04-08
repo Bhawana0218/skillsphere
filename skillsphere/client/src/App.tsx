@@ -24,11 +24,14 @@ import FreelancerDashboardPage from "./pages/freelancer/Dashboard";
 // import FreelancerProfilePage from "..//freelancer/Profile";
 import FreelancerProfile from "./components/freelancer/profile/FreelancerProfile";
 import FreelancerProposals from "./pages/freelancer/FreelancerProposals";
+import FreelancerAnalytics from "./pages/freelancer/Analytics";
 import Footer from "./layouts/Footer/Footer";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 import ChatRoom from "./features/chat/ChatRoom";
 import ClientFinance from "./pages/client/ClientFinance";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDisputesPage from "./features/disputes/FileDispute";
+import AdminDisputes from "./features/admin/AdminDisputes";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -92,7 +95,7 @@ function App() {
 
         <Route path="/freelancer/proposals"
          element={
-           <ProtectedRoute>
+           <ProtectedRoute  allowedRoles={["freelancer"]}>
              <MainLayout>
               <FreelancerProposals />
              </MainLayout>
@@ -101,7 +104,7 @@ function App() {
          <Route
           path="/freelancer-dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["freelancer"]}>
               <MainLayout>
                 <FreelancerDashboard />
               </MainLayout>
@@ -124,10 +127,20 @@ function App() {
         <Route
           path="/freelancer/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["freelancer"]}>
              <MainLayout>
                 <FreelancerDashboardPage />
              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/freelancer/analytics"
+          element={
+            <ProtectedRoute  allowedRoles={["freelancer"]}>
+              <MainLayout>
+                <FreelancerAnalytics />
+              </MainLayout>
             </ProtectedRoute>
           }
         />
@@ -135,7 +148,7 @@ function App() {
         <Route
           path="/freelancer/profile"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["freelancer"]}>
              <MainLayout>
                 <FreelancerProfile />
              </MainLayout>
@@ -146,7 +159,7 @@ function App() {
          <Route
           path="/client/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["client"]}>
              <MainLayout>
                <ClientDashboard onBack={()=> null}/>
             </MainLayout>
@@ -157,7 +170,7 @@ function App() {
         <Route
           path="/chat"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["client", "freelancer"]}>
               <MainLayout>
                 <ChatRoom />
               </MainLayout>
@@ -177,7 +190,7 @@ function App() {
         <Route
           path="/client/finance"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["client"]}>
               <MainLayout>
                 <ClientFinance />
               </MainLayout>
@@ -188,9 +201,19 @@ function App() {
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["admin"]}>
               <MainLayout>
                 <AdminDashboard />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/disputes"
+          element={
+            <ProtectedRoute  allowedRoles={["admin"]}>
+              <MainLayout>
+                <AdminDisputes />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -199,10 +222,20 @@ function App() {
         <Route
           path="/client/proposals"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["client"]}>
               <MainLayout>
                 <ClientProposals />
                 <Footer />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/disputes"
+          element={
+            <ProtectedRoute  allowedRoles={["client", "freelancer"]}>
+              <MainLayout>
+                <UserDisputesPage />
               </MainLayout>
             </ProtectedRoute>
           }
@@ -241,7 +274,7 @@ function App() {
         <Route
           path="/client/profile"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute  allowedRoles={["client"]}>
              <MainLayout>
                 <ClientProfilePage />
              </MainLayout>

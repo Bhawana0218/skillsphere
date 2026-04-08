@@ -13,10 +13,11 @@ import {
   FileText,
   LayoutDashboard,
   Briefcase,
-  MessageSquare
+  MessageSquare,
+  Scale, TrendingUp
 } from "lucide-react";
 import API from "../services/api";
-import toast from "react-hot-toast";
+// import tnoast from "react-hot-toast";
 
 
 interface Proposal {
@@ -67,16 +68,19 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [proposalsDropdownOpen, setProposalsDropdownOpen] = useState(false);
+  const [pendingDisputes, setPendingDisputes] = useState(0);
 
   // Fetch navbar data efficiently
   useEffect(() => {
     const fetchData = async () => {
       if (!token || !currentUser?._id) {
         setProposals([]);
+        setPendingDisputes(0);
         return;
       }
 
       try {
+        // Fetch proposals
         const endpoint =
           role === "client"
             ? `/proposals/client/${currentUser._id}`
@@ -84,20 +88,23 @@ const Navbar = () => {
             ? `/proposals/freelancer/${currentUser._id}`
             : null;
 
-        if (!endpoint) {
+        if (endpoint) {
+          const res = await API.get(endpoint);
+          setProposals(res.data || []);
+        } else {
           setProposals([]);
-          return;
         }
 
-        const res = await API.get(endpoint);
-        setProposals(res.data || []);
+        // Fetch pending disputes
+        const [disputeRes] = await Promise.all([
+          API.get('/disputes/me').catch(() => ({ data: { summary: { pending: 0 } } }))
+        ]);
+        setPendingDisputes(disputeRes.data.summary.pending || 0);
       } catch (err: unknown) {
         const status = axios.isAxiosError(err) ? err.response?.status : undefined;
         if (status !== 401 && status !== 403) {
           console.error("Navbar fetch error:", err);
-          toast.error("Failed to load data.");
         }
-        setProposals([]);
       } 
     };
 
@@ -132,7 +139,7 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   // Reusable NavLink component
-  const NavLink = ({ 
+const NavLink = ({ 
     to, 
     children, 
     mobile = false,
@@ -144,7 +151,8 @@ const Navbar = () => {
     mobile?: boolean;
     onClick?: () => void;
     active?: boolean;
-  }) => (
+    className?: string;
+  } & React.ComponentProps<typeof Link>) => (
     <Link
       to={to}
       onClick={onClick}
@@ -217,6 +225,16 @@ const Navbar = () => {
               My Proposals
               {proposals.length > 0 && <CountBadge count={proposals.length} />}
             </NavLink>
+            <NavLink to="/freelancer/analytics">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
+            </NavLink>
+            <NavLink to="/disputes">
+              <Scale className="w-4 h-4 relative" />
+              Disputes
+              {pendingDisputes > 0 && <CountBadge count={pendingDisputes} />}
+              {pendingDisputes > 0 && <NotificationDot />}
+            </NavLink>
           </>
         )}
 
@@ -229,6 +247,12 @@ const Navbar = () => {
             </NavLink>
             <NavLink to="/client/dashboard"><LayoutDashboard className="w-4 h-4"/>Dashboard</NavLink>
             <NavLink to="/jobs">My Jobs</NavLink>
+            <NavLink to="/disputes" className={isActive('/disputes') ? 'ring-2 ring-cyan-400/50 bg-cyan-500/20 text-white shadow-lg shadow-cyan-500/50 animate-pulse' : ''}>
+              <Scale className="w-4 h-4 relative" />
+              Disputes
+              {pendingDisputes > 0 && <CountBadge count={pendingDisputes} />}
+              {pendingDisputes > 0 && <NotificationDot />}
+            </NavLink>
 
             {/* Proposals Dropdown */}
             <div className="relative">
@@ -310,6 +334,10 @@ const Navbar = () => {
         {role === "admin" && (
           <>
             <NavLink to="/admin/dashboard"><LayoutDashboard className="w-4 h-4" />Admin Panel</NavLink>
+            <NavLink to="/admin/disputes">
+              <Scale className="w-4 h-4" />
+              Disputes
+            </NavLink>
           </>
         )}
 
@@ -343,7 +371,7 @@ const Navbar = () => {
                 </div>
                 
                  <Link
-          to={currentUser.role === "client" ? "/client/profile" : "/freelancer/profile"} // Dynamically change the profile link
+          to={currentUser.role === "client" ? "/client/profile" : "/freelancer/profile"} 
           onClick={() => setUserDropdownOpen(false)}
           className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-slate-700/80 transition-colors"
         >
@@ -430,6 +458,14 @@ const Navbar = () => {
                   My Proposals
                   {proposals.length > 0 && <CountBadge count={proposals.length} />}
                 </NavLink>
+                <NavLink to="/freelancer/analytics" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <TrendingUp className="w-4 h-4" />
+                  Analytics
+                </NavLink>
+                <NavLink to="/disputes" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <Scale className="w-4 h-4" />
+                  Disputes
+                </NavLink>
               </>
             )}
 
@@ -445,6 +481,10 @@ const Navbar = () => {
                 <NavLink to="/client/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>
                 <LayoutDashboard className="w-4 h-4"/>Dashboard</NavLink>
                 <NavLink to="/jobs" mobile onClick={() => setMobileMenuOpen(false)}>My Jobs</NavLink>
+                <NavLink to="/disputes" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <Scale className="w-4 h-4" />
+                  Disputes
+                </NavLink>
 
                 {/* Mobile Proposals List */}
                 {proposals.length > 0 && (
@@ -501,6 +541,10 @@ const Navbar = () => {
                 <NavLink to="/admin/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>
                   <LayoutDashboard className="w-4 h-4" />
                   Admin Panel
+                </NavLink>
+                <NavLink to="/admin/disputes" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <Scale className="w-4 h-4" />
+                  Disputes
                 </NavLink>
               </>
             )}

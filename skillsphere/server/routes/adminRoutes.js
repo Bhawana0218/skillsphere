@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAdminSummary,
+  getAdminProfile,
   getAllUsers,
   updateUserSuspend,
   verifyFreelancer,
@@ -14,6 +15,7 @@ import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("/summary", protect, authorizeRoles("admin"), getAdminSummary);
+router.get("/profile", protect, authorizeRoles("admin"), getAdminProfile);
 router.get("/users", protect, authorizeRoles("admin"), getAllUsers);
 router.put("/users/:id/suspend", protect, authorizeRoles("admin"), updateUserSuspend);
 router.put("/users/:id/verify", protect, authorizeRoles("admin"), verifyFreelancer);

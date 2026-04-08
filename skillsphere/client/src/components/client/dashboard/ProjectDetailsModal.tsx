@@ -27,9 +27,18 @@ interface ProgressItem {
   _id?: string;
   milestone: string;
   description?: string;
+  files?: string[];
   completed: boolean;
   completionDate?: string;
   createdAt?: string;
+  logs?: string[];
+  deadline?: string;
+}
+
+interface MilestoneForm {
+  milestone: string;
+  description: string;
+  deadline: string;
 }
 
 // Project type
@@ -56,11 +65,23 @@ const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({ project, onCl
   const [attachments, setAttachments] = useState<Attachment[]>(project.attachments || []);
   const [invites, setInvites] = useState<Invite[]>(project.invitedFreelancers || []);
   const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
+  const [role, setRole] = useState<'client' | 'freelancer'>('client');
+  const [newMilestone, setNewMilestone] = useState<MilestoneForm>({ milestone: '', description: '', deadline: '' });
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [completionPct, setCompletionPct] = useState(0);
   const [attachmentName, setAttachmentName] = useState('');
   const [attachmentUrl, setAttachmentUrl] = useState('');
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [loadingProgress, setLoadingProgress] = useState(false);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setRole(user.role as 'client' | 'freelancer');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -69,6 +90,8 @@ const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({ project, onCl
       try {
         const response = await api.get(`/progress/${projectId}`);
         setProgressItems(response.data || []);
+        const pct = response.data ? Math.round((response.data.filter((p: ProgressItem) => p.completed).length / response.data.length) * 100) : 0;
+        setCompletionPct(pct);
       } catch (error) {
         console.error('Failed to load progress', error);
         toast.error('Unable to load project progress.');
@@ -285,13 +308,19 @@ const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({ project, onCl
           </div>
 
           <div className="rounded-3xl border border-slate-200/70 bg-white p-6">
-            <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500 font-bold">Progress Timeline</p>
-                <p className="mt-2 text-sm text-slate-600">Follow each milestone and see completed work updates.</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500 font-bold">PROJECT PROGRESS TRACKER</p>
+                <h4 className="mt-2 text-lg font-bold text-slate-900">{completionPct}% Complete</h4>
+                <p className="text-sm text-slate-600">{progressItems.filter((p: ProgressItem) => p.completed).length}/{progressItems.length} Milestones Done</p>
               </div>
-              <div className="text-sm font-semibold text-slate-700">
-                {loadingProgress ? 'Loading...' : `${progressItems.length} update${progressItems.length !== 1 ? 's' : ''}`}
+              <div className="w-full md:w-auto">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-full p-3 border border-cyan-100">
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 rounded-full" style={{width: `${completionPct}%`}}></div>
+                  </div>
+                  <span className="text-sm font-semibold text-cyan-700">{completionPct}%</span>
+                </div>
               </div>
             </div>
 

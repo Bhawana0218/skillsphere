@@ -11,7 +11,13 @@ import {
   DollarSign,
   BadgeCheck,
   RefreshCcw,
+  Scale
 } from "lucide-react";
+
+interface TopCategory {
+  category: string;
+  count: number;
+}
 
 interface AdminSummary {
   totalUsers: number;
@@ -28,6 +34,23 @@ interface AdminSummary {
   completedPayments: number;
   failedPayments: number;
   refundedPayments: number;
+  platformRevenue?: number;
+  activeFreelancers?: number;
+  topCategories?: TopCategory[];
+  jobSuccessRate?: number;
+}
+
+interface AdminProfile {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  isVerified: boolean;
+  isSuspended: boolean;
+  authProvider: string;
+  twoFactorEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AdminUser {
@@ -91,8 +114,10 @@ const AdminDashboard = () => {
   const [pendingGigs, setPendingGigs] = useState<AdminGig[]>([]);
   const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<AdminSummary | null>(null);
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | null>(null);
   const [fraudReviews, setFraudReviews] = useState<FraudReview[]>([]);
   const [fraudPayments, setFraudPayments] = useState<FraudPayment[]>([]);
+  const [disputeSummary, setDisputeSummary] = useState({ pendingDisputes: 0, inReviewDisputes: 0, resolvedDisputes: 0 });
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -100,15 +125,18 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       console.log('Loading is True', loading);
-      const [summaryRes, usersRes, gigsRes, paymentsRes, fraudRes] = await Promise.all([
+      const [summaryRes, profileRes, usersRes, gigsRes, paymentsRes, fraudRes, disputesRes] = await Promise.all([
         api.get("/admin/summary"),
+        api.get("/admin/profile"),
         api.get("/admin/users"),
         api.get("/admin/gigs/pending"),
         api.get("/admin/payments"),
         api.get("/admin/fraud-alerts"),
+        api.get("/disputes"),
       ]);
 
       setSummary(summaryRes.data);
+      setAdminProfile(profileRes.data);
       setUsers(usersRes.data || []);
       setPendingGigs(gigsRes.data || []);
       setPayments(paymentsRes.data.payments || []);
@@ -130,6 +158,7 @@ const AdminDashboard = () => {
       });
       setFraudReviews(fraudRes.data.suspiciousReviews || []);
       setFraudPayments(fraudRes.data.suspiciousPayments || []);
+      setDisputeSummary(disputesRes.data.summary || { pendingDisputes: 0, inReviewDisputes: 0, resolvedDisputes: 0 });
     } catch (error) {
       console.error(error);
       setStatusMessage("Unable to load admin dashboard data. Please refresh.");
@@ -180,27 +209,63 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-cyan-600 font-semibold">Admin control center</p>
-            <h1 className="mt-3 text-4xl font-bold text-slate-900 sm:text-5xl">Platform governance & fraud monitoring</h1>
-            <p className="mt-4 max-w-2xl text-slate-600 sm:text-lg">
-              Full administrative control with user management, freelancer verification, gig approval, payment monitoring, and intelligent fraud oversight.
-            </p>
+        <div className="mb-8 grid gap-5 xl:grid-cols-[1.9fr_0.95fr]">
+          <div className="space-y-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-cyan-600 font-semibold">Admin control center</p>
+              <h1 className="mt-3 text-4xl font-bold text-slate-900 sm:text-5xl">Platform governance & admin performance</h1>
+              <p className="mt-4 max-w-2xl text-slate-600 sm:text-lg">
+                Full administrative control with user management, freelancer verification, gig approval, revenue monitoring, and trusted platform analytics.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                to="/home"
+                className="inline-flex items-center gap-2 rounded-2xl border border-cyan-300 bg-white px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-50 hover:border-cyan-400"
+              >
+                <ArrowLeft className="w-4 h-4" /> Back to platform
+              </Link>
+              <button
+                onClick={loadDashboard}
+                className="inline-flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700"
+              >
+                <RefreshCcw className="w-4 h-4" /> Refresh data
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              to="/home"
-              className="inline-flex items-center gap-2 rounded-2xl border border-cyan-300 bg-white px-5 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-50 hover:border-cyan-400"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back to platform
-            </Link>
-            <button
-              onClick={loadDashboard}
-              className="inline-flex items-center gap-2 rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700"
-            >
-              <RefreshCcw className="w-4 h-4" /> Refresh data
-            </button>
+
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3 text-cyan-600">
+              <ShieldCheck className="w-6 h-6" />
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">My admin profile</p>
+                <p className="text-lg font-semibold text-slate-900">Connected securely to backend</p>
+              </div>
+            </div>
+            <div className="mt-6 space-y-4 text-slate-700">
+              <div className="rounded-3xl bg-cyan-50 p-4">
+                <p className="text-sm text-slate-500">Name</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{adminProfile?.name || "Loading..."}</p>
+              </div>
+              <div className="rounded-3xl bg-cyan-50 p-4">
+                <p className="text-sm text-slate-500">Email</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">{adminProfile?.email || "Loading..."}</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-3xl bg-white p-4 border border-cyan-100">
+                  <p className="text-sm text-slate-500">Account Status</p>
+                  <p className="mt-1 text-base font-semibold text-cyan-700">{adminProfile?.isSuspended ? "Suspended" : "Active"}</p>
+                </div>
+                <div className="rounded-3xl bg-white p-4 border border-cyan-100">
+                  <p className="text-sm text-slate-500">Verified</p>
+                  <p className="mt-1 text-base font-semibold text-cyan-700">{adminProfile?.isVerified ? "Yes" : "No"}</p>
+                </div>
+              </div>
+              <div className="rounded-3xl bg-white p-4 border border-cyan-100">
+                <p className="text-sm text-slate-500">Auth provider</p>
+                <p className="mt-1 text-base font-semibold text-slate-900">{adminProfile?.authProvider || "local"}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -281,6 +346,72 @@ const AdminDashboard = () => {
                 <span>Suspicious / refunds</span>
                 <span className="font-bold text-rose-600">{paymentSummary?.failedPayments ?? 0}</span>
               </div>
+            </div>
+          </div>
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3 text-cyan-600">
+              <Scale className="w-6 h-6" />
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Disputes</p>
+                <p className="text-lg font-semibold text-slate-900">Mediation Queue</p>
+              </div>
+            </div>
+            <div className="mt-6 grid gap-4">
+              <div className="flex items-center justify-between rounded-3xl bg-amber-50 p-4 text-slate-700">
+                <span>Pending</span>
+              <span className="font-bold text-amber-700">{disputeSummary.pendingDisputes}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-3xl bg-cyan-50 p-4 text-slate-700">
+                <span>In Review</span>
+                <span className="font-bold text-cyan-700">{disputeSummary.inReviewDisputes}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-3xl bg-emerald-50 p-4 text-slate-700">
+                <span>Resolved</span>
+                <span className="font-bold text-emerald-700">{disputeSummary.resolvedDisputes}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 grid gap-5 xl:grid-cols-4">
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Revenue</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">
+              INR {summary?.platformRevenue?.toLocaleString() ?? 0}
+            </p>
+            <p className="mt-2 text-sm text-slate-500">Platform revenue from processed payments</p>
+          </div>
+
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Freelancers</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">
+              {summary?.activeFreelancers ?? 0}
+            </p>
+            <p className="mt-2 text-sm text-slate-500">Active verified freelancers on the platform</p>
+          </div>
+
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Success rate</p>
+            <p className="mt-3 text-2xl font-semibold text-slate-900">
+              {summary?.jobSuccessRate ?? 0}%
+            </p>
+            <p className="mt-2 text-sm text-slate-500">Completed project success ratio</p>
+          </div>
+
+          <div className="rounded-3xl border border-cyan-200 bg-white p-6 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Top categories</p>
+            <div className="mt-4 space-y-3">
+              {summary?.topCategories?.slice(0, 3).map((item) => (
+                <div key={item.category} className="rounded-3xl bg-cyan-50 p-3 text-sm text-slate-700">
+                  <div className="flex items-center justify-between gap-4">
+                    <span>{item.category}</span>
+                    <span className="font-semibold text-cyan-700">{item.count}</span>
+                  </div>
+                </div>
+              ))}
+              {(!summary?.topCategories || summary.topCategories.length === 0) && (
+                <p className="text-sm text-slate-500">No category data available.</p>
+              )}
             </div>
           </div>
         </section>

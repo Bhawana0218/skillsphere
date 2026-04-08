@@ -93,7 +93,7 @@ interface ReputationBadge {
 const normalizeProject = (raw: any): Project => {
   const budgetValue =
     typeof raw?.budget === 'number'
-      ? `$${raw.budget.toLocaleString()}`
+      ? `₹${raw.budget.toLocaleString()}`
       : raw?.budget || 'Budget TBD';
   const numericBudget =
     typeof raw?.budget === 'number'
@@ -158,8 +158,8 @@ const normalizeFaq = (raw: any): FAQ => ({
 
 const isValidMongoObjectId = (value: string) => /^[a-fA-F0-9]{24}$/.test(value);
 
-// --- Color Theme: White-Cyan ---
-// Primary: cyan-500/cyan-600 | Background: white/gray-50 | Text: gray-800/gray-900
+// My Home pAge
+
 
 const HomePage: React.FC = () => {
   // State Management
@@ -201,6 +201,12 @@ const HomePage: React.FC = () => {
 
   const [sortBy] = useState<"newest" | "budget-high" | "budget-low" | "applications">("newest");
 
+
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  const isFreelancer = user?.role === "freelancer";
+
   // Sample data for demo (replace with API calls)
   const sampleFreelancerPins: FreelancerPin[] = [
     { id: '1', name: 'Alex Chen', skill: 'React Developer', rating: 4.9, location: { x: 25, y: 40 }, avatar: 'https://i.pravatar.cc/150?img=1', bio: 'Full-stack developer specializing in modern web apps' },
@@ -214,7 +220,7 @@ const HomePage: React.FC = () => {
       id: job._id || job.id || Math.random().toString(36).slice(2),
       title: job.title || 'New Project',
       category: job.skillsRequired?.[0] || 'Web Development',
-      budget: typeof job.budget === 'number' ? `₹${job.budget.toLocaleString()}` : job.budget || '$500',
+      budget: typeof job.budget === 'number' ? `₹${job.budget.toLocaleString()}` : job.budget || '₹500',
       budgetRange: {
         min: typeof job.budget === 'number' ? job.budget : 0,
         max: typeof job.budget === 'number' ? job.budget : 0,
@@ -306,7 +312,7 @@ const stats = useMemo(() => [
 
   const quizQuestions: QuizQuestion[] = [
     { id: 1, question: "What's the nature of your project?", options: ['Web Development', 'Graphic Design', 'Content Writing', 'Data Analysis'], type: 'client' },
-    { id: 2, question: "What's your ideal budget range?", options: ['$500-$1,000', '$1,000-$5,000', '$5,000-$15,000', '$15,000+'], type: 'client' },
+    { id: 2, question: "What's your ideal budget range?", options: ['₹500-₹1,000', '₹1,000-₹5,000', '₹5,000-₹15,000', '₹15,000+'], type: 'client' },
     { id: 3, question: 'How fast do you need it completed?', options: ['ASAP (1 week)', '2-4 weeks', '1-2 months', 'Flexible timeline'], type: 'client' },
     { id: 4, question: 'What are your top skills?', options: ['Frontend Development', 'Backend Development', 'Design', 'Writing & Content'], type: 'freelancer' },
     { id: 5, question: 'How many hours/week can you dedicate?', options: ['<10 hours', '10-20 hours', '20-40 hours', '40+ hours'], type: 'freelancer' },
@@ -1161,7 +1167,7 @@ const stats = useMemo(() => [
               onClick={() => startQuiz('freelancer')}
               className="p-8 bg-white/10 backdrop-blur-sm rounded-3xl border-2 border-white/30 hover:border-white hover:bg-white/20 transition-all duration-300 group text-left"
             >
-              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">✨</div>
+              <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">👩‍💻</div>
               <h3 className="text-xl font-bold mb-2">I'm a Freelancer</h3>
               <p className="text-cyan-100">Get matched with projects that fit your skills</p>
             </button>
@@ -1595,12 +1601,18 @@ const stats = useMemo(() => [
               
               <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                 <span className="text-sm text-gray-500">{project.applications} applications</span>
+            {isFreelancer ? (
                 <button
                   onClick={() => applyToProject(project.id)}
                   className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   Apply Now
                 </button>
+                ) : (
+                <span className="text-xs text-gray-400">
+                   Only freelancers can apply!
+                </span>
+                )}
               </div>
             </div>
           ))}

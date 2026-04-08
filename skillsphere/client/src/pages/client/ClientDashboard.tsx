@@ -9,6 +9,7 @@ import {
   IndianRupee, 
   Plus, 
   RefreshCcw,
+  Scale
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -171,6 +172,20 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
   };
 
   // Calculate Stats
+  const [disputeStats, setDisputeStats] = useState({ pending: 0 });
+
+  useEffect(() => {
+    const fetchDisputes = async () => {
+      try {
+        const res = await api.get('/disputes/me');
+        setDisputeStats(res.data.summary || { pending: 0 });
+      } catch {
+        setDisputeStats({ pending: 0 });
+      }
+    };
+    fetchDisputes();
+  }, [refreshTrigger]);
+
   const stats = {
     total: projects.length,
     completed: projects.filter(p => p.status === 'completed').length,
@@ -205,7 +220,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats Section using StatCard component */}
         <section className="mb-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
             <StatCard 
               title="Total Projects" 
               value={stats.total.toString()} 
@@ -234,6 +249,13 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
               color="purple"
               isCurrency={true}
               trend={`${projects.length} project${projects.length !== 1 ? 's' : ''}`}
+            />
+            <StatCard 
+              title="Pending Disputes" 
+              value={disputeStats.pending.toString()} 
+              icon={<Scale className="w-7 h-7" />} 
+              color="cyan"
+              trend="Resolve payments"
             />
           </div>
         </section>

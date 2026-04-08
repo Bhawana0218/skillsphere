@@ -10,6 +10,7 @@ import AvailabilityCalendar from './AvailabilityCalendar';
 import PricingManager from './PricingManager';
 import type { FreelancerProfileData } from '../../../types/freelancer';
 import api from '../../../services/api';
+import AvailabilityManager from '../../../features/availability/AvailabilityManager';
 
 interface FreelancerProfileProps {
   initialData?: FreelancerProfileData;
@@ -284,6 +285,10 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
           onChange={(availability) => setProfile({ ...profile, availability })}
           onSave={handleAvailabilitySave}
         />
+      </SectionCard>
+
+      <SectionCard title="Availability Slot Scheduler" subtitle="Create bookable calendar slots and automate scheduling" variant="minimal">
+        <AvailabilityManager />
       </SectionCard>
 
       <SectionCard title="Pricing & Payment" subtitle="Set your rates and payment preferences" variant="minimal">

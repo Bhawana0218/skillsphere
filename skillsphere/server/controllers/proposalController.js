@@ -12,6 +12,8 @@ export const createProposal = async (req, res) => {
       return res.status(400).json({ message: "Invalid Job ID" });
     }
 
+    const job = await Job.findById(jobId);
+
     //  2. PREVENT DUPLICATE PROPOSALS (ADD HERE)
     const existing = await Proposal.findOne({
       job: jobId,
@@ -28,6 +30,7 @@ export const createProposal = async (req, res) => {
       job: new mongoose.Types.ObjectId(jobId),
       freelancer: req.user._id,
       bidAmount,
+      
       duration,
       coverLetter,
       status: "pending",
@@ -54,20 +57,6 @@ export const getProposalsByJob = async (req, res) => {
 };
 
 
-// ACCEPT PROPOSAL
-export const acceptProposal = async (req, res) => {
-  const proposal = await Proposal.findById(req.params.id);
-
-  proposal.status = "accepted";
-  await proposal.save();
-
-  // Update job status
-  await Job.findByIdAndUpdate(proposal.job, {
-    status: "in-progress",
-  });
-
-  res.json({ message: "Proposal accepted" });
-};
 
 // REJECT PROPOSAL
 export const rejectProposal = async (req, res) => {
@@ -80,35 +69,87 @@ export const rejectProposal = async (req, res) => {
 };
 
 
+
 export const getProposalsByClient = async (req, res) => {
+
+  // const job = await Job.findById(jobId); 
   try {
     const { clientId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(clientId)) {
-      return res.status(400).json({ message: "Invalid Client ID" });
-    }
-
-    // 1. Find jobs belonging to client (field is `client` in Job schema)
-    const jobs = await Job.find({ client: new mongoose.Types.ObjectId(clientId) });
-
-    if (jobs.length === 0) {
-      return res.json([]);
-    }
-
-    const jobIds = jobs.map((job) => job._id);
-
-    // 2. Find proposals for those jobs
-    const proposals = await Proposal.find({
-      job: { $in: jobIds },
-    })
+    // First try direct client field
+    let proposals = await Proposal.find({ client: clientId })
       .populate("freelancer", "name email")
       .populate("job", "title");
 
+    // 🔥 Fallback (for old data)
+    if (proposals.length === 0) {
+      const jobs = await Job.find({ client: clientId });
+      const jobIds = jobs.map(j => j._id);
+
+      proposals = await Proposal.find({
+        job: { $in: jobIds },
+      })
+        .populate("freelancer", "name email")
+        .populate("job", "title");
+    }
+
     res.json(proposals);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Error fetching proposals" });
   }
+};
+
+// export const getProposalsByClient = async (req, res) => {
+//   try {
+//     const { clientId } = req.params;
+
+//     const proposals = await Proposal.find({
+//       client: clientId, 
+//     })
+//       .populate("freelancer", "name email")
+//       .populate("job", "title");
+
+//     if (!mongoose.Types.ObjectId.isValid(clientId)) {
+//       return res.status(400).json({ message: "Invalid Client ID" });
+//     }
+
+//     // 1. Find jobs belonging to client (field is `client` in Job schema)
+//     const jobs = await Job.find({ client: new mongoose.Types.ObjectId(clientId) });
+
+//     if (jobs.length === 0) {
+//       return res.json([]);
+//     }
+
+//     const jobIds = jobs.map((job) => job._id);
+
+//     // 2. Find proposals for those jobs
+//     const proposalsByJobs = await Proposal.find({  
+//       job: { $in: jobIds },
+//     })
+//       .populate("freelancer", "name email")
+//       .populate("job", "title");
+
+//     res.json(proposalsByJobs); 
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error fetching proposals" });
+//   }
+// };
+
+
+// ACCEPT PROPOSAL
+export const acceptProposal = async (req, res) => {
+  const proposal = await Proposal.findById(req.params.id);
+
+  proposal.status = "accepted";
+  await proposal.save();
+
+  // Update job status
+  await Job.findByIdAndUpdate(proposal.job, {
+    status: "in-progress",
+  });
+
+  res.json(proposal);
 };
 
 export const getProposalsByFreelancer = async (req, res) => {

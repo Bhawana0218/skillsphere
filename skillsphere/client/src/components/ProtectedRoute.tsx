@@ -1,7 +1,6 @@
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
 
-//  User Type
 interface User {
   _id: string;
   name: string;
@@ -11,33 +10,33 @@ interface User {
   isVerified?: boolean;
 }
 
-//  Props Type
 interface ProtectedRouteProps {
   children: ReactNode;
-  // role?: string;
+  allowedRoles?: string[];
 }
 
-function ProtectedRoute({ children }: ProtectedRouteProps) {
-
+function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const token = localStorage.getItem("token");
 
   const storedUser = localStorage.getItem("user");
   const user: User | null = storedUser ? JSON.parse(storedUser) : null;
 
-  //  MAIN AUTH CHECK
+  //  Auth check
   if (!token || !user) {
-    return <Navigate to="/" replace />; // or "/login"
+    return <Navigate to="/" replace />;
   }
 
-  // Email verification gate (product UX).
-  // Backend can additionally enforce with REQUIRE_EMAIL_VERIFIED=true.
+  // Email verification check
   if (user.isVerified === false) {
     return <Navigate to="/verify-required" replace />;
   }
 
+  // Role check (NEW)
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/home" replace />; // or /unauthorized
+  }
 
   return <>{children}</>;
 }
-
 
 export default ProtectedRoute;

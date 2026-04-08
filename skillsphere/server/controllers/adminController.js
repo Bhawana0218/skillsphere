@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import Job from "../models/Job.js";
+import Project from "../models/Project.js";
 import Payment from "../models/Payment.js";
 import Review from "../models/Review.js";
 
@@ -48,6 +49,36 @@ export const getAdminSummary = async (req, res) => {
       refundedPayments: 0,
     };
 
+    const activeFreelancers = await User.countDocuments({ role: "freelancer", isSuspended: false });
+
+    const topCategoryAgg = await Project.aggregate([
+      {
+        $group: {
+          _id: { $ifNull: ["$category", "General"] },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    const projectSummary = await Project.aggregate([
+      {
+        $group: {
+          _id: null,
+          completed: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
+            },
+          },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const { completed = 0, total = 0 } = projectSummary[0] || {};
+    const jobSuccessRate = total ? Math.round((completed / total) * 100) : 0;
+
     res.json({
       totalUsers,
       clients,
@@ -58,11 +89,47 @@ export const getAdminSummary = async (req, res) => {
       totalJobs,
       openJobs,
       pendingGigs,
+      platformRevenue: Number(stats.totalVolume || 0),
       paymentVolume: Number(stats.totalVolume || 0),
       paymentsCount: stats.totalPayments,
       completedPayments: stats.completedPayments,
       failedPayments: stats.failedPayments,
       refundedPayments: stats.refundedPayments,
+      activeFreelancers,
+      topCategories: topCategoryAgg.map((item) => ({
+        category: item._id,
+        count: item.count,
+      })),
+      jobSuccessRate,
+      completedProjects: completed,
+      totalProjects: total,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAdminProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select(
+      "-password -twoFactorSecret -emailVerificationToken -emailVerificationExpiresAt -passwordResetToken -passwordResetExpiresAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      isSuspended: user.isSuspended || false,
+      authProvider: user.authProvider,
+      twoFactorEnabled: user.twoFactorEnabled,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

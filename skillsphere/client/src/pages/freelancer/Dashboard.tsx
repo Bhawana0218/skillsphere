@@ -311,7 +311,7 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen  text-slate-900">
       <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
           <div className="space-y-3">
