@@ -70,7 +70,7 @@ const FreelancerAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-white to-blue-50">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1.5, repeat: Infinity }}
@@ -81,7 +81,7 @@ const FreelancerAnalytics = () => {
   }
 
   return (
-    <div className="min-h-screen py-10 px-6 bg-gradient-to-br from-slate-50 via-white to-blue-50 text-slate-800">
+    <div className="min-h-screen py-10 px-6 bg-linear-to-br from-slate-50 via-white to-blue-50 text-slate-800">
       <div className="max-w-7xl mx-auto space-y-10">
 
         {/* Header */}
