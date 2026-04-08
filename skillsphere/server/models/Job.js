@@ -18,6 +18,10 @@ const jobSchema = new mongoose.Schema(
       enum: ["open", "closed"],
       default: "open",
     },
+    adminApproved: {
+      type: Boolean,
+      default: false,
+    },
 
     isDeleted: {
      type: Boolean,

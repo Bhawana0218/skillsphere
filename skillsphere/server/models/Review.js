@@ -18,8 +18,30 @@ const reviewSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       max: 5,
+      required: true,
     },
-    comment: String,
+    comment: {
+      type: String,
+      default: "",
+    },
+    isVerifiedReview: {
+      type: Boolean,
+      default: false,
+    },
+    fraudScore: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0,
+    },
+    helpfulVotes: {
+      type: Number,
+      default: 0,
+    },
+    flaggedCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

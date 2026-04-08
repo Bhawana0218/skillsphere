@@ -37,7 +37,7 @@ interface Proposal {
 
 interface UserData {
   _id: string;
-  role: "client" | "freelancer";
+  role: "client" | "freelancer" | "admin";
   name?: string;
   email?: string;
   avatar?: string;
@@ -307,6 +307,12 @@ const Navbar = () => {
           </>
         )}
 
+        {role === "admin" && (
+          <>
+            <NavLink to="/admin/dashboard"><LayoutDashboard className="w-4 h-4" />Admin Panel</NavLink>
+          </>
+        )}
+
         {/* User Dropdown (Authenticated) */}
         {token && currentUser && (
           <div className="relative ml-1">
@@ -487,6 +493,15 @@ const Navbar = () => {
                   </div>
                 )}
                
+              </>
+            )}
+
+            {role === "admin" && (
+              <>
+                <NavLink to="/admin/dashboard" mobile onClick={() => setMobileMenuOpen(false)}>
+                  <LayoutDashboard className="w-4 h-4" />
+                  Admin Panel
+                </NavLink>
               </>
             )}
 

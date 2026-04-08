@@ -33,11 +33,28 @@ interface Project {
   status: ProjectStatus;
   category?: string;
   deadline?: string;
+  attachments?: Attachment[];
+  invitedFreelancers?: Invite[];
 }
 
 // Props for ClientDashboard
 interface ClientDashboardProps {
   onBack: () => void;
+}
+
+// Attachment Type
+interface Attachment {
+  name: string;
+  url: string;
+  uploadedAt: string;
+}
+
+// Invite Type
+interface Invite {
+  name: string;
+  email: string;
+  invitedAt: string;
+  status: string;
 }
 
 // Form data coming from NewProjectModal
@@ -125,6 +142,22 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
     }
   };
 
+  const handleViewProject = async (project: Project) => {
+    if (!project._id && !project.id) {
+      setSelectedProject(project);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/client/projects/${project._id || project.id}`);
+      setSelectedProject(response.data);
+    } catch (error) {
+      console.error('Failed to load project details', error);
+      setSelectedProject(project);
+      toast.error('Unable to load project details from server.');
+    }
+  };
+
   // Update Project Status
   const handleUpdateStatus = async (id: string, status: ProjectStatus) => {
     try {
@@ -143,6 +176,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
     completed: projects.filter(p => p.status === 'completed').length,
     inProgress: projects.filter(p => p.status === 'in-progress').length,
     budget: projects.reduce((sum, p) => sum + (parseFloat(String(p.budget)) || 0), 0),
+    attachments: projects.reduce((sum, p) => sum + (p.attachments?.length || 0), 0),
+    invites: projects.reduce((sum, p) => sum + (p.invitedFreelancers?.length || 0), 0),
   };
 
   return (
@@ -168,7 +203,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* ✅ Stats Section using StatCard component */}
+        {/* Stats Section using StatCard component */}
         <section className="mb-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <StatCard 
@@ -229,7 +264,39 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
           </motion.button>
         </section>
 
-        {/* ✅ Projects Grid using ProjectCard component */}
+        <section className="grid gap-4 mb-8 sm:grid-cols-3">
+          <div className="bg-white rounded-3xl border border-slate-200/70 shadow-sm p-6">
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.25em]">Attach Documents</p>
+            <h3 className="mt-4 text-3xl font-bold text-slate-900">{stats.attachments}</h3>
+            <p className="mt-2 text-sm text-slate-600">Documents attached across all active projects.</p>
+            <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-cyan-50 text-cyan-700 text-sm font-medium">
+              <FileText className="w-4 h-4" />
+              Open a project to attach files
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200/70 shadow-sm p-6">
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.25em]">Invite Freelancers</p>
+            <h3 className="mt-4 text-3xl font-bold text-slate-900">{stats.invites}</h3>
+            <p className="mt-2 text-sm text-slate-600">Freelancers invited from your current project list.</p>
+            <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-blue-50 text-blue-700 text-sm font-medium">
+              <Plus className="w-4 h-4" />
+              Send invite from project details
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200/70 shadow-sm p-6">
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-[0.25em]">Track Progress</p>
+            <h3 className="mt-4 text-3xl font-bold text-slate-900">{stats.inProgress}</h3>
+            <p className="mt-2 text-sm text-slate-600">Projects currently in progress. View progress timelines inside each project.</p>
+            <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-cyan-50 text-cyan-700 text-sm font-medium">
+              <Clock className="w-4 h-4" />
+              Track every milestone clearly
+            </div>
+          </div>
+        </section>
+
+        {/*  Projects Grid using ProjectCard component */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
@@ -287,7 +354,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
                 >
                   <ProjectCard
                     project={project}
-                    onView={() => setSelectedProject(project)}
+                    onView={() => handleViewProject(project)}
                     onDelete={() => handleDeleteProject(project._id || project.id)}
                   />
                 </motion.div>
@@ -297,7 +364,7 @@ const ClientDashboard: React.FC<ClientDashboardProps> = () => {
         )}
       </main>
 
-      {/* ✅ Modals with Premium Backdrop - Using your components */}
+      {/* Modals with Premium Backdrop - Using your components */}
       <AnimatePresence>
         {showForm && (
           <NewProjectModal 

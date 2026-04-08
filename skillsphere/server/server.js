@@ -1,5 +1,3 @@
-// server.js
-
 import "./config/env.js";
 import express from "express";
 import dotenv from "dotenv";
@@ -27,6 +25,9 @@ import testimonialRoutes from "./routes/testimonialRoutes.js";
 import faqRoutes from "./routes/faqRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import freelancerProfileRoutes from './routes/freelancerProfileRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import initChatSocket from './sockets/chatSocket.js';
 
 
 dotenv.config();
@@ -94,7 +95,11 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/faqs", faqRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/freelancer/profile", freelancerProfileRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/admin", adminRoutes);
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static("uploads"));
 
 // Start server
 const PORT = process.env.PORT || 5000;
@@ -110,53 +115,6 @@ const io = new Server(serverInstance, {
   },
 });
 
-// Socket events
-io.on("connection", (socket) => {
-  console.log("New client connected: ", socket.id);
-
-  // Join a chat room
-  socket.on("joinRoom", (roomId) => {
-    socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
-  });
-
-  // Send message
-  socket.on("sendMessage", ({ roomId, message, sender }) => {
-    io.to(roomId).emit("receiveMessage", {
-      message,
-      sender,
-      timestamp: new Date(),
-    });
-  });
-
-  socket.on("typing", ({ roomId, sender }) => {
-    socket.to(roomId).emit("typing", { sender });
-  });
-
-   // Notification Functionality
-  // -----------------------------
-  // Each user has a private notification room
-  socket.on("joinUser", (userId) => {
-    socket.join(userId); 
-    console.log(`Socket ${socket.id} joined user room ${userId}`);
-  });
-
-  socket.on("sendNotification", async ({ userId, type, message, link }) => {
-    try {
-      // Save notification in DB (implement createNotification function)
-      const notif = await createNotification(userId, type, message, link);
-
-      // Emit notification to the specific user
-      io.to(userId).emit("receiveNotification", notif);
-    } catch (error) {
-      console.error("Notification error:", error);
-    }
-  });
-
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected: ", socket.id);
-  });
-});
+initChatSocket(io);
 
 export { io };

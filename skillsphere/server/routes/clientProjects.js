@@ -15,6 +15,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/client/projects/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const project = await Project.findById(id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST /api/client/projects
 router.post("/", async (req, res) => {
   const { title, description, budget, deadline, category } = req.body;
@@ -50,6 +62,42 @@ router.post("/:id/apply", async (req, res) => {
       projectId: project._id,
       applications: project.applications,
     });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/client/projects/:id/attachments
+router.put("/:id/attachments", async (req, res) => {
+  const { name, url } = req.body;
+  if (!name || !url) return res.status(400).json({ message: "Attachment name and URL are required" });
+
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    project.attachments = project.attachments || [];
+    project.attachments.push({ name, url });
+    const updatedProject = await project.save();
+    res.json(updatedProject);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/client/projects/:id/invite
+router.put("/:id/invite", async (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) return res.status(400).json({ message: "Freelancer name and email are required" });
+
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    project.invitedFreelancers = project.invitedFreelancers || [];
+    project.invitedFreelancers.push({ name, email });
+    const updatedProject = await project.save();
+    res.json(updatedProject);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

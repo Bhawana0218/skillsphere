@@ -1,11 +1,40 @@
 import express from "express";
 import Profile from "../models/FreelancerProfile.js";
 import { protect, authorizeRoles } from "../middleware/authMiddleware.js";
+import multer from "multer";
+import path from "path";
 
 const router = express.Router();
 
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/resumes/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    cb(null, req.user.id + "-" + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /pdf|doc|docx/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only PDF, DOC, DOCX files are allowed"));
+    }
+  }
+});
+
 // Get freelancer profile
-router.get("/profile", protect, async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id });
     
@@ -39,7 +68,7 @@ router.get("/profile", protect, async (req, res) => {
 });
 
 // Create or update entire profile
-router.post("/profile", protect, async (req, res) => {
+router.post("/", protect, async (req, res) => {
   try {
     const {
       name,
@@ -135,7 +164,7 @@ router.post("/profile", protect, async (req, res) => {
 });
 
 // Update skills
-router.post("/profile/skills", protect, async (req, res) => {
+router.post("/skills", protect, async (req, res) => {
   try {
     const { skills } = req.body;
 
@@ -157,7 +186,7 @@ router.post("/profile/skills", protect, async (req, res) => {
 });
 
 // Update experience
-router.post("/profile/experience", protect, async (req, res) => {
+router.post("/experience", protect, async (req, res) => {
   try {
     const { experience } = req.body;
 
@@ -179,7 +208,7 @@ router.post("/profile/experience", protect, async (req, res) => {
 });
 
 // Update portfolio
-router.post("/profile/portfolio", protect, async (req, res) => {
+router.post("/portfolio", protect, async (req, res) => {
   try {
     const { portfolio } = req.body;
 
@@ -201,7 +230,7 @@ router.post("/profile/portfolio", protect, async (req, res) => {
 });
 
 // Update certifications
-router.post("/profile/certifications", protect, async (req, res) => {
+router.post("/certifications", protect, async (req, res) => {
   try {
     const { certifications } = req.body;
 
@@ -223,7 +252,7 @@ router.post("/profile/certifications", protect, async (req, res) => {
 });
 
 // Update availability
-router.post("/profile/availability", protect, async (req, res) => {
+router.post("/availability", protect, async (req, res) => {
   try {
     const { availability } = req.body;
 
@@ -245,7 +274,7 @@ router.post("/profile/availability", protect, async (req, res) => {
 });
 
 // Update pricing
-router.post("/profile/pricing", protect, async (req, res) => {
+router.post("/pricing", protect, async (req, res) => {
   try {
     const { pricing } = req.body;
 
@@ -262,6 +291,53 @@ router.post("/profile/pricing", protect, async (req, res) => {
     res.json({ success: true, message: "Pricing updated", pricing: profile.pricing });
   } catch (error) {
     console.error("Error updating pricing:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Upload resume
+router.post("/upload-resume", protect, upload.single("resume"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const resumeUrl = `/uploads/resumes/${req.file.filename}`;
+
+    // Find or create profile
+    let profile = await Profile.findOne({ user: req.user.id });
+
+    if (profile) {
+      // Update existing profile
+      profile.resumeUrl = resumeUrl;
+    } else {
+      // Create new profile with resume
+      profile = new Profile({
+        user: req.user.id,
+        resumeUrl,
+        name: '',
+        title: '',
+        bio: '',
+        location: '',
+        hourlyRate: 0,
+        skills: [],
+        experience: [],
+        portfolio: [],
+        certifications: [],
+        availability: [],
+        pricing: { hourlyRate: 0 },
+      });
+    }
+
+    await profile.save();
+
+    res.json({ 
+      success: true, 
+      message: "Resume uploaded successfully", 
+      resumeUrl 
+    });
+  } catch (error) {
+    console.error("Error uploading resume:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

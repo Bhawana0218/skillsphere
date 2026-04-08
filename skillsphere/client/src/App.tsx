@@ -26,12 +26,15 @@ import FreelancerProfile from "./components/freelancer/profile/FreelancerProfile
 import FreelancerProposals from "./pages/freelancer/FreelancerProposals";
 import Footer from "./layouts/Footer/Footer";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
+import ChatRoom from "./features/chat/ChatRoom";
+import ClientFinance from "./pages/client/ClientFinance";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientProposals from "./pages/client/ClientProposals";
-import ClientProfilePage from "./pages/auth/ClientProfile";
+import ClientProfilePage from "./pages/client/ClientProfile";
 // import ClientProfilePage from './pages/client/ClientProfile';
 
 
@@ -147,6 +150,48 @@ function App() {
              <MainLayout>
                <ClientDashboard onBack={()=> null}/>
             </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <ChatRoom />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat/:roomId"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <ChatRoom />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/finance"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <ClientFinance />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AdminDashboard />
+              </MainLayout>
             </ProtectedRoute>
           }
         />

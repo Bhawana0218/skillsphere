@@ -1,5 +1,3 @@
-// Create this new file to centralize type definitions
-
 export interface Skill {
   id?: string;
   name: string;

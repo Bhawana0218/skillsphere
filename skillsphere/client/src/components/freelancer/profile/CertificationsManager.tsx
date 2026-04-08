@@ -89,23 +89,6 @@ const CertificationsManager: React.FC<CertificationsManagerProps> = ({
     }
   };
 
-//   const updateCertification = async (index: number, updates: Partial<Certification>) => {
-//     const updated = [...certifications];
-//     updated[index] = { ...updated[index], ...updates };
-//     onChange(updated);
-    
-//     if (onSave && !readOnly) {
-//       setSaving(true);
-//       try {
-//         await onSave(updated);
-//       } catch (error) {
-//         console.error('Error updating certification:', error);
-//       } finally {
-//         setSaving(false);
-//       }
-//     }
-//   };
-
   return (
     <div className="space-y-4">
       <div className="space-y-3">
@@ -163,12 +146,6 @@ const CertificationsManager: React.FC<CertificationsManagerProps> = ({
           ))
         )}
       </div>
-
-
-      {/* <button  onClick={() => updateCertification}
-                //   disabled={saving}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">Update Cetification</button> */}
-
       {!readOnly && (
         <div>
           {!showForm ? (
@@ -207,7 +184,7 @@ const CertificationsManager: React.FC<CertificationsManagerProps> = ({
                   value={formData.expiryDate || ''}
                   onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                   disabled={saving}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg placeholder:text-gray-700 text-black text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50"
                 />
               </div>
               <input

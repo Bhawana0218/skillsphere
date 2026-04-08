@@ -15,6 +15,10 @@ export const protect = async (req, res, next) => {
         return res.status(401).json({ message: "Invalid token" });
       }
 
+      if (req.user.isSuspended) {
+        return res.status(403).json({ message: "Account suspended" });
+      }
+
       if (
         process.env.REQUIRE_EMAIL_VERIFIED === "true" &&
         !req.user.isVerified

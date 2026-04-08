@@ -38,6 +38,7 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
   });
 
   const [saving, setSaving] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleSave = async () => {
@@ -129,12 +130,55 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
     }
   };
 
-  const handleResumeUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setProfile((prev) => ({ ...prev, resume: file }));
-      setNotification({ type: 'success', message: 'Resume ready to upload!' });
+      await uploadFile(file);
+      // Reset input to allow re-selection of same file
+      e.target.value = '';
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await uploadFile(files[0]);
+    }
+  };
+
+  const uploadFile = async (file: File) => {
+    console.log('File selected:', file.name, file.size);
+    setSelectedFileName(file.name);
+
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    try {
+      console.log('Uploading file...');
+      const response = await api.post("/freelancer/profile/upload-resume", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log('Upload response:', response.data);
+
+      setProfile((prev) => ({ ...prev, resumeUrl: response.data.resumeUrl }));
+      setNotification({ type: 'success', message: 'Resume uploaded successfully!' });
       setTimeout(() => setNotification(null), 2000);
+      setSelectedFileName(null); // Clear after successful upload
+    } catch (error: any) {
+      console.error("Error uploading resume:", error);
+      console.error("Error response:", error.response?.data);
+      setNotification({ type: 'error', message: 'Failed to upload resume. Please try again.' });
+      setTimeout(() => setNotification(null), 2000);
+      setSelectedFileName(null); // Clear on error
     }
   };
 
@@ -155,54 +199,52 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
         </div>
       )}
 
-      {!embedded && (
-        <SectionCard title="Basic Information" subtitle="Your professional identity" variant="minimal">
-          <div className="space-y-4 bg-green-50 rounded-lg p-6 border border-cyan-600">
+      <SectionCard title="Basic Information" subtitle="Your professional identity" variant="minimal">
+        <div className="space-y-4 bg-green-50 rounded-lg p-6 border border-cyan-600">
+          <div>
+            <label className="block text-sm font-medium text-slate-900 mb-2">Full Name</label>
+            <input
+              type="text"
+              value={profile.name}
+              onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg placeholder:text-gray-700 text-black text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Your full name"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-900 mb-2">Full Name</label>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Professional Title</label>
               <input
                 type="text"
-                value={profile.name}
-                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg placeholder:text-gray-700 text-black text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                placeholder="Your full name"
+                value={profile.title}
+                onChange={(e) => setProfile({ ...profile, title: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm placeholder:text-gray-700 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="e.g., Full Stack Developer"
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Professional Title</label>
-                <input
-                  type="text"
-                  value={profile.title}
-                  onChange={(e) => setProfile({ ...profile, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg text-sm placeholder:text-gray-700 text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="e.g., Full Stack Developer"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-900 mb-2">Location</label>
-                <input
-                  type="text"
-                  value={profile.location}
-                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-300  placeholder:text-gray-700 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  placeholder="Your location"
-                />
-              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-900 mb-2">Professional Bio</label>
-              <textarea
-                value={profile.bio}
-                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-2 border border-slate-300 placeholder:text-gray-700 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                placeholder="Tell clients about yourself..."
-              />
-            </div>
+              <label className="block text-sm font-medium text-slate-900 mb-2">Location</label>
+              <input
+                type="text"
+                value={profile.location}
+                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-300  placeholder:text-gray-700 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Your location"
+            />
           </div>
-        </SectionCard>
-      )}
+          <div>
+            <label className="block text-sm font-medium text-slate-900 mb-2">Professional Bio</label>
+            <textarea
+              value={profile.bio}
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+              rows={4}
+              className="w-full px-4 py-2 border border-slate-300 placeholder:text-gray-700 text-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Tell clients about yourself..."
+            />
+          </div>
+        </div>
+        </div>
+      </SectionCard>
 
       <SectionCard title="Skills & Proficiency" subtitle="Add your technical skills with proficiency levels" variant="minimal">
         <SkillsManager
@@ -254,7 +296,15 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
 
       <SectionCard title="Resume Upload" subtitle="Upload your professional resume (PDF, DOC, DOCX)" variant="minimal">
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-cyan-400 transition-colors cursor-pointer">
+          <div 
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+              selectedFileName 
+                ? 'border-green-400 bg-green-50' 
+                : 'border-slate-300 hover:border-cyan-400'
+            }`}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
             <input
               type="file"
               onChange={handleResumeUpload}
@@ -265,8 +315,14 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
             <label htmlFor="resume-upload" className="cursor-pointer flex flex-col items-center gap-3">
               <FileUp size={32} className="text-slate-400" />
               <div>
-                <p className="text-sm font-medium text-slate-900">Click to upload or drag and drop</p>
-                <p className="text-xs text-slate-600">PDF, DOC or DOCX (Max 10MB)</p>
+                {selectedFileName ? (
+                  <p className="text-sm font-medium text-cyan-600">Selected: {selectedFileName}</p>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-slate-900">Click to upload or drag and drop</p>
+                    <p className="text-xs text-slate-600">PDF, DOC or DOCX (Max 10MB)</p>
+                  </>
+                )}
               </div>
             </label>
           </div>
@@ -279,13 +335,11 @@ const FreelancerProfile: React.FC<FreelancerProfileProps> = ({
         </div>
       </SectionCard>
 
-      {!embedded && (
-        <div className="flex gap-3">
-          <PremiumButton fullWidth variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving profile...' : 'Save complete profile'}
-          </PremiumButton>
-        </div>
-      )}
+      <div className="flex gap-3">
+        <PremiumButton fullWidth variant="primary" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving profile...' : 'Save complete profile'}
+        </PremiumButton>
+      </div>
     </div>
     </div>
   );

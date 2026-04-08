@@ -119,7 +119,7 @@ const profileSchema = new mongoose.Schema(
 
 const FreelancerProfile =
   mongoose.models.FreelancerProfile ||
-  mongoose.model("FreelancerProfile", profileSchema, "profiles");
+  mongoose.model("FreelancerProfile", profileSchema, "freelancerprofiles");
 
 export default FreelancerProfile;
 

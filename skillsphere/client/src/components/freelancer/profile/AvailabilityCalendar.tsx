@@ -86,7 +86,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                         checked={slot.available}
                         onChange={(e) => updateSlot(day, { available: e.target.checked })}
                         disabled={saving || readOnly}
-                        className="w-4 h-4 accent-cyan-500 rounded cursor-pointer"
+                        className="w-4 h-4 accent-cyan-500 text-black rounded cursor-pointer"
                       />
                       <span className="text-sm text-slate-600">Available</span>
                     </label>
@@ -102,7 +102,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                         value={slot.startTime}
                         onChange={(e) => updateSlot(day, { startTime: e.target.value })}
                         disabled={saving}
-                        className="px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                        className="px-2 py-1 border border-slate-300 rounded text-sm text-black focus:outline-none focus:ring-2 focus:ring-cyan-500"
                       />
                     </div>
                     <span className="text-slate-400">to</span>
@@ -111,7 +111,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
                       value={slot.endTime}
                       onChange={(e) => updateSlot(day, { endTime: e.target.value })}
                       disabled={saving}
-                      className="px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="px-2 py-1 border border-slate-300 text-black rounded text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
                 )}

@@ -2,12 +2,17 @@ import mongoose from "mongoose";
 
 const chatSchema = new mongoose.Schema(
   {
-    roomId: String,
+    roomId: { type: String, required: true, unique: true },
     messages: [
       {
-        sender: String,
-        text: String,
-        timestamp: Date,
+        sender: { type: String, required: true },
+        text: { type: String, default: "" },
+        type: { type: String, enum: ["text", "file"], default: "text" },
+        fileName: String,
+        fileType: String,
+        fileUrl: String,
+        timestamp: { type: Date, default: Date.now },
+        readBy: { type: [String], default: [] },
       },
     ],
   },

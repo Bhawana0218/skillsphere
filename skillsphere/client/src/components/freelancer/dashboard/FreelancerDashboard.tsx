@@ -11,8 +11,6 @@ interface FreelancerDashboardProps {
 
 const FreelancerDashboard: React.FC<FreelancerDashboardProps> = ({
   profileData,
-  // onBack,
-  // onEditProfile,
   refreshKey = 0,
 }) => {
   return (
